@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+	<style>
+		.tabset > input[type="radio"] {
+		  position: absolute;
+		  left: -200vw;
+		}
+
+		.tabset .tab-panel {
+		  display: none;
+		}
+
+		.tabset > input:first-child:checked ~ .tab-panels > .tab-panel:first-child,
+		.tabset > input:nth-child(3):checked ~ .tab-panels > .tab-panel:nth-child(2),
+		.tabset > input:nth-child(5):checked ~ .tab-panels > .tab-panel:nth-child(3),
+		.tabset > input:nth-child(7):checked ~ .tab-panels > .tab-panel:nth-child(4),
+		.tabset > input:nth-child(9):checked ~ .tab-panels > .tab-panel:nth-child(5),
+		.tabset > input:nth-child(11):checked ~ .tab-panels > .tab-panel:nth-child(6) {
+		  display: block;
+		}
+
+		/*
+		 Styling
+		*/
+		body {
+		  font: 16px/1.5em "Overpass", "Open Sans", Helvetica, sans-serif;
+		  color: #333;
+		  font-weight: 300;
+		}
+
+		.tabset > label {
+		  position: relative;
+		  display: inline-block;
+		  padding: 10px 10px 15px;
+		  border: 1px solid transparent;
+		  border-bottom: 0;
+		  cursor: pointer;
+		  font-weight: 600;
+		}
+
+		.tabset > label::after {
+		  content: "";
+		  position: absolute;
+		  left: 15px;
+		  bottom: 10px;
+		  width: 22px;
+		  height: 4px;
+		  background: #8d8d8d;
+		}
+
+		.tabset > label:hover,
+		.tabset > input:focus + label {
+		  color: #06c;
+		}
+
+		.tabset > label:hover::after,
+		.tabset > input:focus + label::after,
+		.tabset > input:checked + label::after {
+		  background: #06c;
+		}
+
+		.tabset > input:checked + label {
+		  border-color: #ccc;
+		  border-bottom: 1px solid #fff;
+		  margin-bottom: -1px;
+		}
+
+		.tab-panel {
+		  padding: 20px 10px;
+		  border-top: 1px solid #ccc;
+		}
+
+	</style>
+  </head>
+  <body>	
+	
+	<div class="tabset">
+		<!-- Tab 1 -->
+		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" >
+		<label for="tab1">鼠标灵敏度</label>
+		<!-- Tab 2 -->
+		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" checked>
+		<label for="tab2">击杀提示</label>
+ 		<!-- Tab 3 -->
+		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" checked>
+		<label for="tab2">关于</label> 
+		<div class="tab-panels">
+			<!-- ============================================================== -->
+			<section id="tabs-1" class="tab-panel">		
+				<label>游戏配置文件目录</label>
+				<input style="width:100%"value="C:\Users\wywzx\Documents\Escape from Tarkov" />		
+				彩虹六号   灵敏度：
+				<input value="13" />	
+				<input value="83" />
+				DPI:
+				<input value="400" />
+				<br>
+				
+				逃离塔科夫DPI：<input value="1600" />
+				<br>
+				
+				<td></td>
+				<td>
+					<select>
+						<option value ="volvo">
+							Highcom Trooper TFO armor (multicam)	
+							<img src="vest/Highcom_Trooper_TFO_armor_multicam.png" />
+						</option>
+					</select>
+					<br>
+					<button class="pure-button">应用</button>
+				</td>
+				<script>
+				(function(){
+				})()
+				</script>
+			</section>
+			<!-- ============================================================== -->
+			<section id="tabs-2" class="tab-panel">	
+
+				<p>此功能的原理是观察彩击杀视频的数量来进行击杀提示，需要玩家启用Nvidia Highlight并在游戏内部开启相应选项</p>				
+				<label>Nvidia Highlight目录</label>
+				<input  class="remember"  id="nh" style="width:100%"value="Z:\Highlights\Escape From Tarkov" />
+				击杀记录：
+				<p  id="tabs2p"  />
+				<script>
+					(function(){
+						const fs=require("fs")					
+						var tabs2old=Array(100).length
+						var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");						
+						function tabs2()
+						{
+							var p=document.querySelector("#nh").value
+							fs.readdir(p,function(err,dir){
+								if (err) return setTimeout(tabs2,1000)
+								if (tabs2old.length!=dir.length)
+								{
+									console.log(dir)
+									if (tabs2old.length<dir.length)
+										tabs2mp3.play();
+									document.querySelector("#tabs2p").innerHTML=dir.join("<br>")
+								}
+								tabs2old=dir
+								setTimeout(tabs2,1000)
+							})
+							
+						}
+						tabs2()
+					})()
+					
+				</script>
+			</section>
+			<section id="tabs-3" class="tab-panel">	
+			wywzxxz 制作<br>
+			
+			</section>
+		</div>
+		<script>
+		document.querySelectorAll(".remember").forEach(function(e){				
+			e.addEventListener('input', function(evt){
+				localStorage.setItem(e.id,e.value)
+			})
+		})			
+		function save()
+		{
+			document.querySelectorAll(".remember").forEach(function(e){				
+			
+				localStorage.setItem(e.id,e.value)
+			})			
+		}
+		function load()
+		{
+			document.querySelectorAll(".remember").forEach(function(e){				
+				if (e.id in localStorage)
+				e.value=localStorage.getItem(e.id)
+			})			
+		}
+		load()
+		</script>
+  </body>
+</html>
