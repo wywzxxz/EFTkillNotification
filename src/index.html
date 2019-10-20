@@ -76,46 +76,181 @@
 	</style>
   </head>
   <body>	
-	
 	<div class="tabset">
 		<!-- Tab 1 -->
-		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" >
+		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" checked>
 		<label for="tab1">鼠标灵敏度</label>
 		<!-- Tab 2 -->
-		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" checked>
+		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" >
 		<label for="tab2">击杀提示</label>
  		<!-- Tab 3 -->
-		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" checked>
-		<label for="tab2">关于</label> 
+		<input type="radio" name="tabset" id="tab3" aria-controls="tabs-3" >
+		<label for="tab3">关于</label> 
 		<div class="tab-panels">
 			<!-- ============================================================== -->
 			<section id="tabs-1" class="tab-panel">		
+				<p>
+				此功能通过调整配置文件来统一塔科夫与彩虹六号的鼠标灵敏度
+				</p>
 				<label>游戏配置文件目录</label>
-				<input style="width:100%"value="C:\Users\wywzx\Documents\Escape from Tarkov" />		
-				彩虹六号   灵敏度：
-				<input value="13" />	
-				<input value="83" />
-				DPI:
-				<input value="400" />
+				<input class="remember" style="width:100%"value="C:\Users\wywzx\Documents\Escape from Tarkov" />
 				<br>
+				<table>				
+					<tr>
+						<td>DPI</td>
+						<td> <input id="dpi" class="remember" value="1600" /> </td>
+					</tr>
+				</table>	
+				<canvas id="r6chart" width=1000 height=400 ></canvas>
+				<div style="   border: 1px solid #000;margin: 10px 0px;">
+					<p>彩虹六号</p>
+					<table>
+						<tr>
+							<td>灵敏度</td>
+							<td>
+								<input id="r6ms1" class="remember" value="13" onchange="r6drawchart()"> </input>
+								<input id="r6ms2" class="remember" value="84" onchange="r6drawchart()"> </input>
+							</td>
+						</tr>
+						<tr>
+							<td>DPI</td>
+							<td>
+								<input id="r6mdpi" class="remember"  value="400" onchange="r6drawchart()" />
+							</td>
+						</tr>
+					</table>
+					
+					
+				</div>
+					
 				
-				逃离塔科夫DPI：<input value="1600" />
-				<br>
-				
-				<td></td>
-				<td>
-					<select>
-						<option value ="volvo">
-							Highcom Trooper TFO armor (multicam)	
-							<img src="vest/Highcom_Trooper_TFO_armor_multicam.png" />
-						</option>
-					</select>
-					<br>
-					<button class="pure-button">应用</button>
-				</td>
+				<div style="   border: 1px solid #000;margin: 10px 0px;">
+					<p>逃离塔科夫</p>
+					<table>
+						<tr>
+							<td>灵敏度</td>
+							<td>
+								<input id="eftms1" class="remember" value="13" onchange="r6drawchart()"> </input>
+								<input id="eftms2" class="remember" value="84" onchange="r6drawchart()"> </input>
+							</td>
+						</tr>
+						<tr>
+							<td>DPI</td>
+							<td>
+								<input id="eftmdpi" class="remember"  value="1600" onchange="r6drawchart()" />
+							</td>
+						</tr>
+					</table>
+				</div>
+				<script src="chart/Chart.min.js" > </script>
+				<style href="Chart.min.css" > </style>				
 				<script>
+				var r6drawchart=function(){};
+				let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');
 				(function(){
-				})()
+				////////////////////////////////////////////////
+					var echarts = require('echarts');
+					r6drawchart=function(){						
+						var myChart = echarts.init(document.getElementById('r6chart'));
+						var args={
+							XFactorAiming:0.02,
+							r6ms1:parseInt( document.querySelector("#r6ms1").value ),
+							r6ms2:parseInt( document.querySelector("#r6ms2").value )
+						}
+						var symbolSize = 40;	
+						var datas={}
+						function setdata(id)
+						{							
+							function upload()
+							{
+								for (var i in args)
+								{
+									var e=document.querySelector("#"+i)
+									if (!e) continue
+									e.value=args[i]
+									
+								}	
+								save()							
+							}
+							function ans(a){var res={};a.forEach(function(a){res[a[0]]=a[1]});return res}
+							function r6set(dataIndex,pos)
+							{
+								args.r6ms2=Math.max(1,Math.min(100,Math.round(ans(nerdamer.solveEquations(['1/y=dms*r6ms2*0.02','y='+pos[1]].concat(data[dataIndex][2])   )).r6ms2)	))	
+								upload()
+								setdata()
+							}
+							var data=[
+									[0,0],
+									[1,1]
+									,[1/0.9,	1/Math.min(Math.max(0.6 *args.r6ms2*args.XFactorAiming,0),1),["dms=0.6"],r6set	]
+									,[1/0.35,	1/Math.min(Math.max(0.35*args.r6ms2*args.XFactorAiming,0),1),["dms=0.35"],r6set	]
+								]
+							datas[id]=data
+							myChart.setOption({
+								series: [{type:"line",id: id,data: data}]
+							});
+						}						
+						
+						myChart.setOption({
+							tooltip: {triggerOn: 'none',formatter: function (params) {return 'X: ' + params.data[0].toFixed(2) + '<br>Y: ' + params.data[1].toFixed(2);}},
+							xAxis: {name:"画面放大倍数",nameLocation:"middle"},
+							yAxis: {name:"灵敏度放大倍数",max: 10},
+							legend: {
+								data:['彩虹六号']
+							},
+							series: [{
+								id:"r6",
+								name: '彩虹六号',
+								type: 'line',
+								//symbolSize: symbolSize,
+								data: [],
+								label: { normal: {show: true,position: 'top'} }
+							}]
+						})
+						function makeDragable(id)
+						{	
+							function ans(a){var res={};a.forEach(function(a){res[a[0]]=a[1]});return res}
+							myChart.setOption({
+								graphic: echarts.util.map(datas[id], function (item, dataIndex) {
+									return {
+										type: 'circle',
+										position: myChart.convertToPixel('grid', item),
+										shape: {cx: 0,cy: 0,r: symbolSize / 2},
+										//invisible: true,
+										draggable: true,
+										ondrag: echarts.util.curry(function(){
+											var data=datas[id]
+											var pos=myChart.convertFromPixel('grid', this.position)
+											data[dataIndex][1] = pos[1];							
+											args.r6ms2=Math.max(1,Math.min(100,Math.round(ans(nerdamer.solveEquations(['1/y=dms*r6ms2*0.02','y='+pos[1]].concat(data[dataIndex][2])   )).r6ms2)	))								
+											setdata("r6")
+											console.log(this.position,myChart.convertToPixel('grid',data[dataIndex]))
+											this.position=myChart.convertToPixel('grid',data[dataIndex])
+										}, dataIndex),
+
+										z: 100
+									};
+								})				
+							});
+						}
+						setdata("r6")
+						makeDragable("r6")
+						setTimeout(function () {
+							// Add shadow circles (which is not visible) to enable drag.
+						}, 0);
+						window.addEventListener('resize', updatePosition);
+						myChart.on('dataZoom', updatePosition);
+						function updatePosition() {
+							myChart.setOption({
+								graphic: echarts.util.map(data, function (item, dataIndex) {
+									return {position: myChart.convertToPixel('grid', item)};
+								})
+							});
+						}			
+					////////////////////////////////////////////////	
+					}						
+					setTimeout(r6drawchart,0)
+				})()				
 				</script>
 			</section>
 			<!-- ============================================================== -->
@@ -125,8 +260,27 @@
 				<label>Nvidia Highlight目录</label>
 				<input  class="remember"  id="nh" style="width:100%"value="Z:\Highlights\Escape From Tarkov" />
 				击杀记录：
-				<p  id="tabs2p"  />
+				<div  id="killConfirmList"  />
 				<script>
+					var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");		
+					const fs=require("fs")
+					const chokidar = require('chokidar');
+					var watcher=null
+					function killwatcher()
+					{
+						if (watcher) watcher.close()
+						var p=document.querySelector("#nh").value
+						watcher=chokidar.watch(p,{ignoreInitial: true})
+							.on("add",function(path){
+								tabs2mp3.play();
+								document.querySelector("#killConfirmList").innerHTML+=path+"<br>"
+							})
+							.on("unlink",function(){
+								document.querySelector("#killConfirmList").innerHTML=""
+							})
+					}
+					setTimeout(killwatcher,1)
+					/*
 					(function(){
 						const fs=require("fs")					
 						var tabs2old=Array(100).length
@@ -150,17 +304,19 @@
 						}
 						tabs2()
 					})()
+					*/
 					
 				</script>
 			</section>
 			<section id="tabs-3" class="tab-panel">	
-			wywzxxz 制作<br>
-			
+				wywzxxz 制作<br>
+				仓库地址：https://github.com/wywzxxz/EFTkillNotification<br>
 			</section>
 		</div>
 		<script>
 		document.querySelectorAll(".remember").forEach(function(e){				
 			e.addEventListener('input', function(evt){
+				if (e.id)
 				localStorage.setItem(e.id,e.value)
 			})
 		})			

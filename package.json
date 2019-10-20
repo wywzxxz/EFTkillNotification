@@ -29,7 +29,8 @@
         ]
       },
       "electronPackagerConfig": {
-        "packageManager": "npm"
+        "packageManager": "npm",
+        "asar": true
       },
       "electronWinstallerConfig": {
         "name": "eftkillnotification"
@@ -37,8 +38,8 @@
       "electronInstallerDebian": {},
       "electronInstallerRedhat": {},
       "github_repository": {
-        "owner": "",
-        "name": ""
+        "owner": "wywzxxz@163.com",
+        "name": "wywzxxz"
       },
       "windowsStoreConfig": {
         "packageName": "",
@@ -47,8 +48,12 @@
     }
   },
   "dependencies": {
+    "algebra.js": "^0.2.6",
+    "chokidar": "^3.2.2",
+    "echarts": "^4.4.0",
     "electron-compile": "^6.4.4",
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "nerdamer": "^1.0.4"
   },
   "devDependencies": {
     "babel-plugin-transform-async-to-generator": "^6.24.1",
