@@ -78,10 +78,10 @@
   <body>	
 	<div class="tabset">
 		<!-- Tab 1 -->
-		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" checked>
+		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" >
 		<label for="tab1">鼠标灵敏度</label>
 		<!-- Tab 2 -->
-		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" >
+		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" checked>
 		<label for="tab2">击杀提示</label>
  		<!-- Tab 3 -->
 		<input type="radio" name="tabset" id="tab3" aria-controls="tabs-3" >
@@ -266,16 +266,46 @@
 					const fs=require("fs")
 					const chokidar = require('chokidar');
 					var watcher=null
+					var tabsmp3play=function(){};
+					var tabsmp3stop=function(){};
+					(function(){
+						var playing=false;
+						var count=0,target=0;
+						tabsmp3play=function(notcount=false){
+							if(!notcount)
+								target+=1
+							console.log("target",target,playing)
+							if (! playing)
+							{
+								playing=true
+								tabs2mp3.play();
+								return
+							}							
+						}
+						tabsmp3stop=function()
+						{
+							//tabs2mp3.stop();
+							count=target=0
+						}
+						tabs2mp3.addEventListener("ended", function(){
+							playing=false
+							console.log("finish",count,target)
+							count+=1
+							if (count<target)
+								tabsmp3play(true)
+						}, false);
+					})()
 					function killwatcher()
 					{
 						if (watcher) watcher.close()
 						var p=document.querySelector("#nh").value
 						watcher=chokidar.watch(p,{ignoreInitial: true})
 							.on("add",function(path){
-								tabs2mp3.play();
+								tabsmp3play()
 								document.querySelector("#killConfirmList").innerHTML+=path+"<br>"
 							})
 							.on("unlink",function(){
+								tabsmp3stop()
 								document.querySelector("#killConfirmList").innerHTML=""
 							})
 					}
