@@ -78,10 +78,10 @@
   <body>	
 	<div class="tabset">
 		<!-- Tab 1 -->
-		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" >
+		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" checked>
 		<label for="tab1">鼠标灵敏度</label>
 		<!-- Tab 2 -->
-		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" checked>
+		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" >
 		<label for="tab2">击杀提示</label>
  		<!-- Tab 3 -->
 		<input type="radio" name="tabset" id="tab3" aria-controls="tabs-3" >
@@ -90,21 +90,21 @@
 			<!-- ============================================================== -->
 			<section id="tabs-1" class="tab-panel">		
 				<p>
-				此功能通过调整配置文件来统一塔科夫与彩虹六号的鼠标灵敏度
+				此功能通过调整配置文件来统一不同游戏的灵敏度
 				</p>
-				<label>游戏配置文件目录</label>
-				<input class="remember" style="width:100%"value="C:\Users\wywzx\Documents\Escape from Tarkov" />
-				<br>
-				<table>				
-					<tr>
-						<td>DPI</td>
-						<td> <input id="dpi" class="remember" value="1600" /> </td>
-					</tr>
-				</table>	
-				<canvas id="r6chart" width=1000 height=400 ></canvas>
+				<canvas id="mschart" width=1000 height=400 ></canvas>
+				<button onclick="zoom-=1;r6drawchart()">放大</button>
+				<button onclick="zoom+=1;r6drawchart()">缩小</button>
+				(拖动结点调整灵敏度。结点会自动吸附其他足够接近的结点)<br>
 				<div style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>彩虹六号</p>
 					<table>
+						<tr>
+							<td>XFactorAiming</td>
+							<td>
+								<input id="XFactorAiming" class="remember"  value="0.02" onchange="r6drawchart()" />
+							</td>
+						</tr>
 						<tr>
 							<td>灵敏度</td>
 							<td>
@@ -118,6 +118,7 @@
 								<input id="r6mdpi" class="remember"  value="400" onchange="r6drawchart()" />
 							</td>
 						</tr>
+						
 					</table>
 					
 					
@@ -126,12 +127,15 @@
 				
 				<div style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>逃离塔科夫</p>
+					<label>游戏配置文件目录</label>
+					<input id="eftconfig"class="remember" style="width:100%"value="C:\Users\wywzx\Documents\Escape from Tarkov" />
+					<br>
 					<table>
 						<tr>
 							<td>灵敏度</td>
 							<td>
-								<input id="eftms1" class="remember" value="13" onchange="r6drawchart()"> </input>
-								<input id="eftms2" class="remember" value="84" onchange="r6drawchart()"> </input>
+								<input id="eftms1" class="remember" value="0.17" onchange="r6drawchart()"> </input>
+								<input id="eftms2" class="remember" value="0.17" onchange="r6drawchart()"> </input>
 							</td>
 						</tr>
 						<tr>
@@ -141,116 +145,329 @@
 							</td>
 						</tr>
 					</table>
+					<input id="efttd" type="checkbox" class="remember" >抵消装备带来的转向惩罚</input><label id="efttdl"></label>
+					<br>	
+					头盔:<select id="efthm" class="remember"></select><img id="efthmE"/><br>
+					弹挂:<select id="eftrg" class="remember"></select><img id="eftrgE"/><br>
+					防弹衣:<select id="eftve" class="remember"></select><img id="eftveE"/><br>					
+					
+					
+					<button onclick="eftread()">读取设置</button>
+					<button onclick="eftwrite()">写入设置</button>					
+					<script>
+					var helmat=[
+						 {"name":"None",turn:0}
+						,{"name":"Altyn helmet","turn":-0.17,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2d/AltynHelmetIcon.png?version=19ea6ac80fe75fc496b44b48ccd0688f"}
+						,{"name":"SSh-68 helmet (1968 steel helmet)","turn":-0.08,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/aa/SSH-68Icon.png?version=f8247f9cfc146de305300d7e9b58d0c0"}
+						,{"name":"Highcom Striker ACHHC IIIA helmet","turn":-0.07,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e1/ACHHC_Icon.gif?version=ed8ead1cc230598982d10dce875ac730"}
+						//,{"name":"","turn":,"url":""}
+					]
+					var vests=[
+						 {"name":"None",turn:0}
+						,{"name":"Zhuk-6a heavy armor","turn":-0.05,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/5c/Zhuk-6a_heavy_armor_icon.png?version=2df7ef169cdc3dfc6311c7ae20fcd39c"}
+						,{"name":"6B13 M assault armor (tan)","turn":-0.03,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d9/6B13_M_icon.png?version=0a1f6a57afe6e580d34597ebbc628647"}						
+						,{"name":"IOTV Gen4 armor (assault kit)","turn":-0.09,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/0/05/Gen4assault.png/250px-Gen4assault.png?version=f22e61fb3698871c6418b580b2dee1e0"}
+						,{"name":"	Highcom Trooper TFO armor (multicam)","turn":-0.05,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/bb/Highcom_Trooper_TFO_armor_%28multicam%29_icon.png?version=229102336ae47769e73b383e6f0ac4a5"}
+						//,{"name":"","turn":,"url":""}
+					]
+					var rigs=[
+						{"name":"None",turn:0}
+						,{"name":"6B5-16 armored rig","turn":-0.05,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c7/6B5-16_armored_rig_icon.png?version=2b479fa257e3329dba24b4bd42a7f033"}
+						//,{"name":"","turn":,"url":""}
+					]
+					
+					helmat.forEach(t=>{
+						var e=document.createElement("option")
+						e.innerHTML=t.name
+						document.getElementById("efthm").append(e)
+					})
+					vests.forEach(t=>{
+						var e=document.createElement("option")
+						e.innerHTML=t.name
+						document.getElementById("eftve").append(e)
+					})
+					rigs.forEach(t=>{
+						var e=document.createElement("option")
+						e.innerHTML=t.name
+						document.getElementById("eftrg").append(e)
+					})
+					document.getElementById("efthm").onclick=eftgear
+					document.getElementById("eftve").onclick=eftgear					
+					document.getElementById("eftrg").onclick=eftgear
+					function getgearturn()
+					{
+						return	 helmat[document.getElementById("efthm").selectedIndex].turn
+								+vests[document.getElementById("eftve").selectedIndex].turn
+								+rigs[document.getElementById("eftrg").selectedIndex].turn;
+					}	
+					function eftgear()
+					{
+						document.getElementById("efthmE").src=helmat[document.getElementById("efthm").selectedIndex].url
+						document.getElementById("eftveE").src=vests[document.getElementById("eftve").selectedIndex].url
+						document.getElementById("eftrgE").src=rigs[document.getElementById("eftrg").selectedIndex].url
+						document.getElementById("efttdl").innerHTML="("+100*getgearturn()+"%)"						
+					}
+					setTimeout(eftgear,1000)
+					function eftread(notload=false)
+					{
+						var fs=require("fs")
+						try{
+							var json=fs.readFileSync(document.querySelector("#eftconfig").value+"\\shared.ini")
+						}catch(e)
+						{
+							alert("塔科夫配置文件读取错误")
+						}
+						if (!json || json.length==0)  return alert("塔科夫配置文件路径不存在")
+						json=JSON.parse(""+json)
+						if (!notload)
+						{
+							document.querySelector("#eftms1").value=json["bak_MouseSensitivity"] || json["MouseSensitivity"]						
+							document.querySelector("#eftms2").value=json["MouseAimingSensitivity"]						
+							save()
+							r6drawchart()
+						}
+						return json
+					}
+					function eftwrite()
+					{
+						var json=eftread(true)						
+						json["MouseSensitivity"]=parseFloat(document.querySelector("#eftms1").value)
+						json["MouseAimingSensitivity"]=parseFloat(document.querySelector("#eftms2").value)		
+						
+						json["bak_MouseSensitivity"]=json["MouseSensitivity"]
+						if (document.getElementById("efttd").checked)
+							json["MouseSensitivity"]/=(1+getgearturn())
+						
+						try{
+							fs.writeFileSync(document.querySelector("#eftconfig").value+"\\shared.ini",JSON.stringify(json))
+						}catch(e)
+						{
+							alert("塔科夫配置文件读取错误")
+						}						
+					}
+					</script>
 				</div>
 				<script src="chart/Chart.min.js" > </script>
-				<style href="Chart.min.css" > </style>				
+				<style href="chart/Chart.min.css" > </style>	
+				<script src="https://d3js.org/d3.v5.min.js"></script>	
+				<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+				<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.4"></script>				
 				<script>
-				var r6drawchart=function(){};
-				let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');
-				(function(){
-				////////////////////////////////////////////////
-					var echarts = require('echarts');
-					r6drawchart=function(){						
-						var myChart = echarts.init(document.getElementById('r6chart'));
-						var args={
-							XFactorAiming:0.02,
-							r6ms1:parseInt( document.querySelector("#r6ms1").value ),
-							r6ms2:parseInt( document.querySelector("#r6ms2").value )
-						}
-						var symbolSize = 40;	
-						var datas={}
-						function setdata(id)
-						{							
-							function upload()
-							{
-								for (var i in args)
-								{
-									var e=document.querySelector("#"+i)
-									if (!e) continue
-									e.value=args[i]
-									
-								}	
-								save()							
-							}
-							function ans(a){var res={};a.forEach(function(a){res[a[0]]=a[1]});return res}
-							function r6set(dataIndex,pos)
-							{
-								args.r6ms2=Math.max(1,Math.min(100,Math.round(ans(nerdamer.solveEquations(['1/y=dms*r6ms2*0.02','y='+pos[1]].concat(data[dataIndex][2])   )).r6ms2)	))	
-								upload()
-								setdata()
-							}
-							var data=[
-									[0,0],
-									[1,1]
-									,[1/0.9,	1/Math.min(Math.max(0.6 *args.r6ms2*args.XFactorAiming,0),1),["dms=0.6"],r6set	]
-									,[1/0.35,	1/Math.min(Math.max(0.35*args.r6ms2*args.XFactorAiming,0),1),["dms=0.35"],r6set	]
-								]
-							datas[id]=data
-							myChart.setOption({
-								series: [{type:"line",id: id,data: data}]
-							});
-						}						
-						
-						myChart.setOption({
-							tooltip: {triggerOn: 'none',formatter: function (params) {return 'X: ' + params.data[0].toFixed(2) + '<br>Y: ' + params.data[1].toFixed(2);}},
-							xAxis: {name:"画面放大倍数",nameLocation:"middle"},
-							yAxis: {name:"灵敏度放大倍数",max: 10},
-							legend: {
-								data:['彩虹六号']
+				Chart.defaults.global.elements.line.fill = false;			
+				let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				
+				var chartInstance
+				var zoom=5
+				function r6drawchart(){//setTimeout(function(){						
+					////////////////////////////////////////////////
+					var options = {
+						type: 'scatter',  						
+						data: {
+							datasets: [
+							//{showLine: true,label: "Rasd",data: [{x: 0,y: 5}, {x: 5.2,y: 10}, {x: 8,y: 5}, {x: 15,y: 0}]}
+							]
+						},
+						options: {
+							responsive: true,
+							maintainAspectRatio: true,
+							scales: {
+								xAxes: [{ scaleLabel: {display: true,labelString: '放大倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom)},type: 'linear',position: 'bottom'}],
+								yAxes: [{ scaleLabel: {display: true,labelString: '灵敏度倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom)}}]
+								
 							},
-							series: [{
-								id:"r6",
-								name: '彩虹六号',
-								type: 'line',
-								//symbolSize: symbolSize,
-								data: [],
-								label: { normal: {show: true,position: 'top'} }
-							}]
-						})
-						function makeDragable(id)
-						{	
-							function ans(a){var res={};a.forEach(function(a){res[a[0]]=a[1]});return res}
-							myChart.setOption({
-								graphic: echarts.util.map(datas[id], function (item, dataIndex) {
-									return {
-										type: 'circle',
-										position: myChart.convertToPixel('grid', item),
-										shape: {cx: 0,cy: 0,r: symbolSize / 2},
-										//invisible: true,
-										draggable: true,
-										ondrag: echarts.util.curry(function(){
-											var data=datas[id]
-											var pos=myChart.convertFromPixel('grid', this.position)
-											data[dataIndex][1] = pos[1];							
-											args.r6ms2=Math.max(1,Math.min(100,Math.round(ans(nerdamer.solveEquations(['1/y=dms*r6ms2*0.02','y='+pos[1]].concat(data[dataIndex][2])   )).r6ms2)	))								
-											setdata("r6")
-											console.log(this.position,myChart.convertToPixel('grid',data[dataIndex]))
-											this.position=myChart.convertToPixel('grid',data[dataIndex])
-										}, dataIndex),
-
-										z: 100
-									};
-								})				
-							});
+							elements: {line: {tension: 0}}
+							//,pan: {enabled: true,mode: 'x'}
+							,zoom: {enabled: true,mode: 'xy'}
+							,tooltips: {
+								callbacks: {
+									afterLabel: function(tooltipItem, data) {
+										var res=""
+										var dt=data.datasets[tooltipItem.datasetIndex]										
+										res+=""+dt.label+" "+dt.data[tooltipItem.index].label
+										return res
+									}
+									,footer:function(ti,ob)
+									{										
+										var res=""										
+										var x=ti[0].xLabel
+										var val=ti[0].yLabel
+										var block={};ti.forEach(t=>{block[t.datasetIndex+","+t.index]=true})
+										ob.datasets.forEach((dt,dti)=>{
+											dt.data.forEach((d,i)=>{												
+												if ( Math.abs(val-d.y)<0.2 && !block[dti+","+i] )
+													res+="(临近)"+dt.label+" "+d.label+"\t"+(d.y-val).toFixed(10)+"\n"
+												if (i<=0) return
+												var c=dt.data[i-1]
+												if (c.x<x && x<d.x)
+												{													
+													var y=c.y+(x-c.x)*(d.y-c.y)/(d.x-c.x)													
+													if ( Math.abs(val-y)<0.2)
+													{														
+														res+="(临近)"+dt.label+" 插值\t"+(y-val).toFixed(10)+"\n"	
+													}
+												}	
+											})
+										})
+										return res
+									}
+								}
+							}
 						}
-						setdata("r6")
-						makeDragable("r6")
-						setTimeout(function () {
-							// Add shadow circles (which is not visible) to enable drag.
-						}, 0);
-						window.addEventListener('resize', updatePosition);
-						myChart.on('dataZoom', updatePosition);
-						function updatePosition() {
-							myChart.setOption({
-								graphic: echarts.util.map(data, function (item, dataIndex) {
-									return {position: myChart.convertToPixel('grid', item)};
-								})
-							});
-						}			
-					////////////////////////////////////////////////	
-					}						
-					setTimeout(r6drawchart,0)
-				})()				
+					};
+					function upload(arg)
+					{
+						for (var i in arg)
+						{
+							var e=document.querySelector("#"+i);if (!e) continue							
+							e.value=arg[i]
+						}	
+						save()
+					}
+					function ans(a){var res={};a.forEach(function(a){res[a[0]]=a[1]});return res}
+					function infinitY(data){						
+						var x1,x2,y1,y2
+						x1=data[data.length-3].x
+						y1=data[data.length-3].y
+						x2=data[data.length-2].x
+						y2=data[data.length-2].y
+						var that=data[data.length-1]
+						that.x=100
+						that.y=y1+(y2-y1)/(x2-x1)*(that.x-x1)
+						
+					}
+					function reverseset()
+					{
+						this.y=this.set(null)
+					}
+					//逃离塔科夫
+					(function(){
+						var arg={
+							 eftms1:parseFloat( document.querySelector("#eftms1").value )
+							,eftms2:parseFloat( document.querySelector("#eftms2").value )
+							,eftmdpi:parseInt( document.querySelector("#eftmdpi").value )
+						}
+						var data= [	
+								{x:0,y:0}
+								,{x: 1,mtd:28800
+									,update:function(){ this.y=1/(1.0*(arg.eftms1/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
+									,set:function(newy){ arg.eftms1=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);  }
+									,label:"第一人称"  
+								}
+								,{x: 1,mtd:44300
+									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
+									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
+									,label:"机瞄"  
+								}
+								,{x: 1,mtd:48004
+									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
+									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
+									,label:"全息"  
+								}
+								,{x: 3.5,mtd:95996
+									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
+									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
+									,label:"PU 3.5x"  
+								}
+								,{x: 4,mtd:143984
+									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
+									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
+									,label:"x4(HAMR,DR1/4xFDE,PSO 1 4x24"  
+								}
+							]
+						data.push({update:infinitY.bind(null,data)})
+						data.forEach(function(e){
+							e.update=e.update || function(){};e.set=e.set || function(){}
+							e.update()
+						})
+						options.data.datasets.push({label: "Escape From Tarkov",data: data,showLine: true,borderColor: "#8e5ea2"})						
+					})();
+					//彩虹六号										
+					(function(){
+						var arg={
+							XFactorAiming:parseFloat( document.querySelector("#XFactorAiming").value ),
+							r6ms1:parseInt( document.querySelector("#r6ms1").value ),
+							r6ms2:parseInt( document.querySelector("#r6ms2").value )						
+						}
+						function set(newy){
+							/*
+							var t=ans(nerdamer.solveEquations([
+								"1/y=dms*r6ms2*XFactorAiming",
+								"y="+newy,
+								"XFactorAiming="+arg.XFactorAiming
+							].concat(this.equations)   ))							
+							arg.r6ms2=Math.max(1,Math.min(100,Math.round(t.r6ms2)))
+							*/
+							arg.r6ms2=1.0/newy/this.dms/arg.XFactorAiming
+							arg.r6ms2=Math.max(1,Math.min(100,Math.round(arg.r6ms2)))
+							upload(arg)
+						}
+						var data= [	
+								{x:0,y:0}
+								,{x: 1,y: 1,label:"第一人称"}
+								,{x: 1/0.9 ,  update:function(){ this.y=1/Math.min(Math.max(0.6 *arg.r6ms2*arg.XFactorAiming,0),1)}		,set:set,dms:0.6,equations:["dms=0.6"],label:"机瞄/全息/红点/反射"}
+								,{x: 1/0.35,  update:function(){ this.y=1/Math.min(Math.max(0.35*arg.r6ms2*arg.XFactorAiming,0),1)}		,set:set,dms:0.35,equations:["dms=0.35"],label:"2.5倍镜"}
+							]
+						data.push({update:infinitY.bind(null,data)})
+						data.forEach(function(e){
+							e.update=e.update || function(){};e.set=e.set || function(){}
+							e.update()
+						})						
+						options.data.datasets.push({label: "Rainbow Six Siege",data: data,showLine: true,borderColor: "#3e95cd"})						
+					})();
+					//////////////////////////////////////
+					if (chartInstance) chartInstance.destroy();
+					chartInstance = new Chart(document.getElementById('mschart').getContext('2d'), options);
+					d3.select(chartInstance.chart.canvas).call(		d3.drag().container(chartInstance.chart.canvas).on('start', getElement).on('drag', updateData)   );
+
+					var element, scale, datasetIndex, index, value
+					function getElement () {
+						var e = d3.event.sourceEvent
+						element = chartInstance.getElementAtEvent(e)[0]		
+						if (!element) {scale=null;return }
+						scale = element['_yScale'].id
+					}
+					function updateData () {
+						if (!element) return
+						var e = d3.event.sourceEvent
+						datasetIndex = element['_datasetIndex']
+						index = element['_index']
+						value = chartInstance.scales[scale].getValueForPixel(e.layerY)
+						var data=chartInstance.data.datasets[datasetIndex].data		
+						//////////////////
+						//实现吸附功能						
+						var x=data[index].x
+						var nv=null
+						chartInstance.data.datasets.forEach((dt,dti)=>{							
+							if (dt._meta[0] && dt._meta[0].hidden) return
+							dt.data.forEach((d,i)=>{
+								if (datasetIndex==dti && i==index) return
+								if ( nv==null || Math.abs(nv-value)>Math.abs( d.y-value  ))
+									nv=d.y								
+								if (i<=0) return
+								var c=dt.data[i-1]
+								if (c.x<x && x<d.x)
+								{
+									var y=c.y+(x-c.x)*(d.y-c.y)/(d.x-c.x)
+									if ( nv==null || Math.abs(nv-value)>Math.abs( y-value  ))
+									{
+										nv=y																			
+									}
+								}
+							})
+						})												
+						if (nv!=null && Math.abs(nv-value)<0.02)
+						value=nv
+						//////////////////
+																
+						data[index].set(value)
+						data.forEach(e=>e.update())
+						chartInstance.update(0)
+					}
+					
+					
+					
+				////////////////////////////////////////////////
+				}//},1)
+				setTimeout(r6drawchart,1000)
 				</script>
 			</section>
 			<!-- ============================================================== -->
@@ -273,8 +490,7 @@
 						var count=0,target=0;
 						tabsmp3play=function(notcount=false){
 							if(!notcount)
-								target+=1
-							console.log("target",target,playing)
+								target+=1							
 							if (! playing)
 							{
 								playing=true
@@ -288,8 +504,7 @@
 							count=target=0
 						}
 						tabs2mp3.addEventListener("ended", function(){
-							playing=false
-							console.log("finish",count,target)
+							playing=false							
 							count+=1
 							if (count<target)
 								tabsmp3play(true)
@@ -345,26 +560,32 @@
 		</div>
 		<script>
 		document.querySelectorAll(".remember").forEach(function(e){				
-			e.addEventListener('input', function(evt){
-				if (e.id)
-				localStorage.setItem(e.id,e.value)
-			})
+			e.addEventListener('input', save)
 		})			
 		function save()
 		{
 			document.querySelectorAll(".remember").forEach(function(e){				
-			
-				localStorage.setItem(e.id,e.value)
+				if (e.type=="checkbox")
+					localStorage.setItem(e.id,e.checked)
+				if (e.type=="select-one")
+					localStorage.setItem(e.id,e.selectedIndex)
+				else
+					localStorage.setItem(e.id,e.value)
 			})			
 		}
 		function load()
 		{
 			document.querySelectorAll(".remember").forEach(function(e){				
-				if (e.id in localStorage)
-				e.value=localStorage.getItem(e.id)
+				if (!e.id in localStorage) return
+				if (e.type=="checkbox")
+					e.checked=localStorage.getItem(e.id)=="true"					
+				if (e.type=="select-one")
+					e.selectedIndex=parseInt(localStorage.getItem(e.id))
+				else
+					e.value=localStorage.getItem(e.id)
 			})			
 		}
-		load()
+		setTimeout(load,1)
 		</script>
   </body>
 </html>
