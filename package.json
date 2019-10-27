@@ -38,8 +38,8 @@
       "electronInstallerDebian": {},
       "electronInstallerRedhat": {},
       "github_repository": {
-        "owner": "wywzxxz@163.com",
-        "name": "wywzxxz"
+        "owner": "wywzxxz",
+        "name": "EFTkillNotification"
       },
       "windowsStoreConfig": {
         "packageName": "",
@@ -47,13 +47,10 @@
       }
     }
   },
-  "dependencies": {
-    "algebra.js": "^0.2.6",
-    "chokidar": "^3.2.2",
-    "echarts": "^4.4.0",
+  "dependencies": {    
+    "chokidar": "^3.2.2",    
     "electron-compile": "^6.4.4",
-    "electron-squirrel-startup": "^1.0.0",
-    "nerdamer": "^1.0.4"
+    "electron-squirrel-startup": "^1.0.0"    
   },
   "devDependencies": {
     "babel-plugin-transform-async-to-generator": "^6.24.1",
