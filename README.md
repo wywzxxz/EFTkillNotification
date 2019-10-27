@@ -15,5 +15,5 @@
 本工具实现了逃离塔科夫鼠标灵敏度的一键导入导出，并且可以自动修正装备带来的转向惩罚
 
 ## 如何使用
-从此页面(https://github.com/wywzxxz/EFTkillNotification/releases)下载，其中eftkillnotification-win32-x64.zip是绿色版，解压即可使用。
+从此页面( https://github.com/wywzxxz/EFTkillNotification/releases  )下载，其中eftkillnotification-win32-x64.zip是绿色版，解压即可使用。
 eftkillnotification-1.0.0.Setup.exe是安装包，功能上与绿色版并无区别。
