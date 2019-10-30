@@ -153,7 +153,7 @@
 					
 					
 					<button onclick="eftread()">读取设置</button>
-					<button onclick="eftwrite()">写入设置</button>					
+					<button onclick="eftwrite()">写入设置</button>(重启生效)<br>
 					<script>
 					var helmat=[
 						 {"name":"None",turn:0}
@@ -168,10 +168,12 @@
 						,{"name":"6B13 M assault armor (tan)","turn":-0.03,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d9/6B13_M_icon.png?version=0a1f6a57afe6e580d34597ebbc628647"}						
 						,{"name":"IOTV Gen4 armor (assault kit)","turn":-0.09,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/0/05/Gen4assault.png/250px-Gen4assault.png?version=f22e61fb3698871c6418b580b2dee1e0"}
 						,{"name":"	Highcom Trooper TFO armor (multicam)","turn":-0.05,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/bb/Highcom_Trooper_TFO_armor_%28multicam%29_icon.png?version=229102336ae47769e73b383e6f0ac4a5"}
+						,{"name":"BNTI Kirasa-N armor","turn":-0.05,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b6/BNTIKirasaNarmorIcon.png?version=872ec8adeeb5bbfa6606380ccd927777"}
 						//,{"name":"","turn":,"url":""}
 					]
 					var rigs=[
 						{"name":"None",turn:0}
+						,{"name":"6B5-15 Zh -86 'Uley' armored rig","turn":-0.07,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8e/6B5-15icon.png?version=8964e9d5e4b5c7349c0bb6e785ecfa97"}
 						,{"name":"6B5-16 armored rig","turn":-0.05,"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c7/6B5-16_armored_rig_icon.png?version=2b479fa257e3329dba24b4bd42a7f033"}
 						//,{"name":"","turn":,"url":""}
 					]
@@ -249,12 +251,12 @@
 				</div>
 				<script src="chart/Chart.min.js" > </script>
 				<style href="chart/Chart.min.css" > </style>	
-				<script src="https://d3js.org/d3.v5.min.js"></script>	
-				<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-				<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.4"></script>				
+				<script src="d3.v5.min.js"></script>	
+				<script src="chart/hammerjs@2.0.8"></script>
+				<script src="chart/chartjs-plugin-zoom@0.7.4"></script>				
 				<script>
 				Chart.defaults.global.elements.line.fill = false;			
-				let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				
+				//let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				
 				var chartInstance
 				var zoom=5
 				function r6drawchart(){//setTimeout(function(){						
