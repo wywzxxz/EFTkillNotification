@@ -86,13 +86,13 @@
   <body>	
 	<div class="tabset">
 		<!-- Tab 1 -->
-		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" checked>
+		<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" class="remember"  checked>
 		<label for="tab1">鼠标灵敏度</label>
 		<!-- Tab 2 -->
-		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" >
+		<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" class="remember">
 		<label for="tab2">击杀提示</label>
  		<!-- Tab 3 -->
-		<input type="radio" name="tabset" id="tab3" aria-controls="tabs-3" >
+		<input type="radio" name="tabset" id="tab3" aria-controls="tabs-3" class="remember" >
 		<label for="tab3">关于</label> 
 		<div class="tab-panels">
 			<!-- ============================================================== -->
@@ -498,6 +498,9 @@ console.log(JSON.stringify(res))
 				<input  class="remember"  id="nh" style="width:100%"value="Z:\Highlights\Escape From Tarkov" />
 				击杀记录：
 				<div  id="killConfirmList"  />
+				简易教程:<br>
+				<img src="image/1.png" width="50%"></img><br>
+				<img src="image/2.png" width="50%"></img><br>
 				<script>
 					var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");		
 					const fs=require("fs")
@@ -587,7 +590,9 @@ console.log(JSON.stringify(res))
 			document.querySelectorAll(".remember").forEach(function(e){				
 				if (e.type=="checkbox")
 					localStorage.setItem(e.id,e.checked)
-				if (e.type=="select-one")
+				else if (e.type=="radio")
+					localStorage.setItem(e.id,e.checked)
+				else if (e.type=="select-one")
 					localStorage.setItem(e.id,e.selectedIndex)
 				else
 					localStorage.setItem(e.id,e.value)
@@ -598,8 +603,10 @@ console.log(JSON.stringify(res))
 			document.querySelectorAll(".remember").forEach(function(e){				
 				if (!(e.id in localStorage) || localStorage.getItem(e.id)=="") return
 				if (e.type=="checkbox" )
+					e.checked=localStorage.getItem(e.id)=="true"	
+				else if (e.type=="radio" )
 					e.checked=localStorage.getItem(e.id)=="true"					
-				if (e.type=="select-one")
+				else if (e.type=="select-one")
 					e.selectedIndex=parseInt(localStorage.getItem(e.id))
 				else
 					e.value=localStorage.getItem(e.id)
