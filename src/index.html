@@ -74,6 +74,14 @@
 		}
 
 	</style>
+	<script>
+		function parsePath(p){
+			var res=p.toUpperCase()
+			for (i in process.env)
+			res=res.replace("%"+i+"%",process.env[i])
+			return res
+		}
+	</script>
   </head>
   <body>	
 	<div class="tabset">
@@ -128,7 +136,7 @@
 				<div style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>逃离塔科夫</p>
 					<label>游戏配置文件目录</label>
-					<input id="eftconfig"class="remember" style="width:100%"value="C:\Users\wywzx\Documents\Escape from Tarkov" />
+					<input id="eftconfig"class="remember" style="width:100%"value="%USERPROFILE%\Documents\Escape from Tarkov" />
 					<br>
 					<table>
 						<tr>
@@ -219,7 +227,7 @@ console.log(JSON.stringify(res))
 					{
 						var fs=require("fs")
 						try{
-							var json=fs.readFileSync(document.querySelector("#eftconfig").value+"\\shared.ini")
+							var json=fs.readFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini")
 						}catch(e)
 						{
 							alert("塔科夫配置文件读取错误")
@@ -246,7 +254,7 @@ console.log(JSON.stringify(res))
 							json["MouseSensitivity"]/=(1+getgearturn())
 						
 						try{
-							fs.writeFileSync(document.querySelector("#eftconfig").value+"\\shared.ini",JSON.stringify(json))
+							fs.writeFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini",JSON.stringify(json,null,2))
 						}catch(e)
 						{
 							alert("塔科夫配置文件读取错误")
@@ -588,8 +596,8 @@ console.log(JSON.stringify(res))
 		function load()
 		{
 			document.querySelectorAll(".remember").forEach(function(e){				
-				if (!e.id in localStorage) return
-				if (e.type=="checkbox")
+				if (!(e.id in localStorage) || localStorage.getItem(e.id)=="") return
+				if (e.type=="checkbox" )
 					e.checked=localStorage.getItem(e.id)=="true"					
 				if (e.type=="select-one")
 					e.selectedIndex=parseInt(localStorage.getItem(e.id))
