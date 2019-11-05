@@ -81,6 +81,46 @@
 			res=res.replace("%"+i+"%",process.env[i])
 			return res
 		}
+		function remember()
+		{
+			document.querySelectorAll(".remember").forEach(function(e){
+				if (!e.inited)
+				{
+					e.addEventListener('input', save)
+					load([e])
+				}
+				e.inited=true
+			})			
+		}		
+		function save()
+		{
+			document.querySelectorAll(".remember").forEach(function(e){				
+				if (e.type=="checkbox")
+					localStorage.setItem(e.id,e.checked)
+				else if (e.type=="radio")
+					localStorage.setItem(e.id,e.checked)
+				else if (e.type=="select-one")
+					localStorage.setItem(e.id,e.selectedIndex)
+				else
+					localStorage.setItem(e.id,e.value)
+			})			
+		}
+		function load(e)
+		{
+			if (e==null)
+				e=document.querySelectorAll(".remember")			
+			e.forEach(function(e){				
+				if (!(e.id in localStorage) || localStorage.getItem(e.id)=="") return
+				if (e.type=="checkbox" )
+					e.checked=localStorage.getItem(e.id)=="true"	
+				else if (e.type=="radio" )
+					e.checked=localStorage.getItem(e.id)=="true"					
+				else if (e.type=="select-one")
+					e.selectedIndex=parseInt(localStorage.getItem(e.id))
+				else
+					e.value=localStorage.getItem(e.id)
+			})			
+		}
 	</script>
   </head>
   <body>	
@@ -95,14 +135,13 @@
 		<input type="radio" name="tabset" id="tab3" aria-controls="tabs-3" class="remember" >
 		<label for="tab3">关于</label> 
 		<div class="tab-panels">
-			<!-- ============================================================== -->
+			<!-- ====鼠标灵敏度调整========================================================== -->
 			<section id="tabs-1" class="tab-panel">		
-				<p>
-				此功能通过调整配置文件来统一不同游戏的灵敏度
-				</p>
+				<p>此功能通过调整配置文件来统一不同游戏的灵敏度</p>
 				<canvas id="mschart" width=400 height=200 ></canvas>
-				<button onclick="zoom-=1;r6drawchart()">放大</button>
-				<button onclick="zoom+=1;r6drawchart()">缩小</button>
+				<input id="zoom" class="remember" value=5 hidden > </input>
+				<button onclick="document.querySelector('#zoom').value=parseFloat(document.querySelector('#zoom').value)-1;save();r6drawchart()">放大</button>
+				<button onclick="document.querySelector('#zoom').value=parseFloat(document.querySelector('#zoom').value)+1;save();r6drawchart()">缩小</button>
 				(拖动结点调整灵敏度。结点会自动吸附其他足够接近的结点)<br>
 				<div style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>彩虹六号</p>
@@ -130,9 +169,7 @@
 					</table>
 					
 					
-				</div>
-					
-				
+				</div>									
 				<div style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>逃离塔科夫</p>
 					<label>游戏配置文件目录</label>
@@ -162,118 +199,120 @@
 					
 					<button onclick="eftread()">读取设置</button>
 					<button onclick="eftwrite()">写入设置</button>(重启生效)<br>
-					<script>
-					/*
-var res=[{name:"empty",url:""}];
-document.querySelectorAll(".wikitable")[0].querySelectorAll("tr").forEach(function(e,i){
-if(i<=0) return;
-res.push({
-url:e.querySelector("img").src
-,name:e.querySelectorAll("th a ")[1].innerHTML
-,class:parseInt(e.querySelectorAll("td")[0].innerHTML)
-,zones:e.querySelectorAll("td")[1].innerHTML
-,durability:parseInt(e.querySelectorAll("td")[2].innerHTML)
-,movespeed:0.01*parseFloat(e.querySelectorAll("td font")[0].innerHTML)
-,turnspeed:0.01*parseFloat(e.querySelectorAll("td font")[2].innerHTML)
-,ergonomics:parseInt(e.querySelectorAll("td font")[2].innerHTML)
-})
-console.log(e)
-})
-console.log(JSON.stringify(res))
-					*/
-					
-					
-					var helmat=[{"name":"empty","url":""},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c3/Kolpak-1S_Icon.png?version=18086bb6585faca7700710df52fdf460","name":"Kolpak-1S riot helmet","class":2,"zones":"Head\n","durability":null,"movespeed":-0.02,"turnspeed":-0.05,"ergonomics":-5},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/eb/PumpkinHelmetIcon.png?version=e37ad9db311478bfd2fa8068d3ab6fa7","name":"Jack-o'-lantern tactical pumpkin helmet","class":2,"zones":"Head\n","durability":null,"movespeed":-0.03,"turnspeed":0,"ergonomics":0},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/3b/SHPM_Firefighter%27s_helmet_icon.png?version=e1ce0ec892a37a21f3f80856d7bf69ff","name":"SHPM Firefighter's helmet","class":2,"zones":"Head\n","durability":null,"movespeed":0,"turnspeed":-0.1,"ergonomics":-10},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/ba/PSH-97_-Jeta-_helmet_Icon.png?version=ef3f1764655e2a751bd19cfb5a9842d7","name":"PSH-97 \"Jeta\" helmet","class":2,"zones":"Head\n","durability":null,"movespeed":0,"turnspeed":-0.14,"ergonomics":-14},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e3/UNTARHelmetIcon.png?version=de05a174b4e5a14b9dce188a1dc61150","name":"UNTAR helmet","class":3,"zones":"Head\n","durability":null,"movespeed":-0.02,"turnspeed":-0.02,"ergonomics":-2},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/1e/6B47_Icon.gif?version=88b5b6d44359a594a3f11209f4a76ef9","name":"6B47 Ratnik-BSh Helmet","class":3,"zones":"Head\n","durability":null,"movespeed":-0.01,"turnspeed":-0.02,"ergonomics":-2},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/aa/SSH-68Icon.png?version=f8247f9cfc146de305300d7e9b58d0c0","name":"SSh-68 helmet (1968 steel helmet)","class":3,"zones":"Head\n","durability":null,"movespeed":-0.02,"turnspeed":-0.13,"ergonomics":-13},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/68/LZSh_light_helmet_icon.png?version=ddf02b59a828e320b577e2dface1daab","name":"LZSh light helmet","class":3,"zones":"Head\n","durability":null,"movespeed":-0.01,"turnspeed":-0.01,"ergonomics":-1},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/1c/Kiver-M_Helmet_icon.png?version=5a9bbcf64aab02c0ebad8dac4fab7a69","name":"Kiver-M Helmet","class":3,"zones":"Head\n","durability":null,"movespeed":-0.03,"turnspeed":-0.01,"ergonomics":-1},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/97/DEVTAC_Ronin_ballistic_helmet_Icon.png?version=45a9bc720541472b4b2e0e61a2f84f83","name":"DEVTAC Ronin ballistic helmet","class":3,"zones":"Head\n","durability":null,"movespeed":-0.05,"turnspeed":-0.05,"ergonomics":-5},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b0/SFERAHelmetIcon.png?version=6fa39390b5eb5f60457c78b351871491","name":"SSSh-95 Sfera-S (Sphere-S)","class":3,"zones":"Head\n","durability":null,"movespeed":-0.02,"turnspeed":-0.03,"ergonomics":-3},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e1/ACHHC_Icon.gif?version=ed8ead1cc230598982d10dce875ac730","name":"Highcom Striker ACHHC IIIA helmet","class":4,"zones":"Head\n","durability":null,"movespeed":-0.02,"turnspeed":-0.02,"ergonomics":-2},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/ed/FASTMT_Icon.gif?version=79ddd0493010aa58099f7233587fdc1c","name":"Ops-Core Fast MT SUPER HIGH CUT Helmet","class":4,"zones":"Head\n","durability":null,"movespeed":-0.01,"turnspeed":0,"ergonomics":0},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/0d/ZSH-1-2M_Icon.gif?version=7987daf2024dce015cd25a339d94e4d5","name":"ZSh-1-2M helmet","class":4,"zones":"Head\n","durability":null,"movespeed":-0.03,"turnspeed":-0.02,"ergonomics":-2},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/bb/ULACH_Icon.gif?version=111d789156c2a08296134f2154d9d9b6","name":"Highcom Striker ULACH IIIA helmet","class":4,"zones":"Head\n","durability":null,"movespeed":-0.02,"turnspeed":-0.04,"ergonomics":-4},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e1/Crye_Precision_Airframe_Tan_Icon.png?version=249f0fa3a41c7d4c08aff557af5b46d1","name":"Crye Precision Airframe Tan","class":4,"zones":"Head\n","durability":null,"movespeed":0,"turnspeed":-0.03,"ergonomics":-3},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/02/Maska_1Sch_helmet_icon.gif?version=619d4ac11ba382f2abd0145a798d4903","name":"Maska 1Sch helmet","class":4,"zones":"Head\n","durability":null,"movespeed":-0.03,"turnspeed":-0.07,"ergonomics":-7},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2d/AltynHelmetIcon.png?version=19ea6ac80fe75fc496b44b48ccd0688f","name":"Altyn helmet","class":5,"zones":"Head\n","durability":null,"movespeed":-0.07,"turnspeed":-0.06,"ergonomics":-6},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/30/Vulkan-5_%28LShZ-5%29_heavy_helmet_icon.png?version=3e92b7f3ca140ec80441d9a615baad1f","name":"Vulkan-5 (LShZ-5) heavy helmet","class":6,"zones":"Head\n","durability":null,"movespeed":-0.07,"turnspeed":-0.15,"ergonomics":-15}]
-					var vests=[{"name":"empty","url":""},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f8/3M_icon.png?version=e9d020fb4619894a366b00dd47e7c8bb","name":"Module-3M bodyarmor","class":2,"zones":"Thorax and stomach\n","durability":40,"movespeed":-0.07,"turnspeed":-0.04,"ergonomics":-4},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/91/PACA_icon.png?version=e74b08bd7e440e4c3e23c164ccaa30e7","name":"PACA Soft Armor","class":2,"zones":"Thorax and stomach\n","durability":50,"movespeed":-0.06,"turnspeed":-0.06,"ergonomics":-6},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/62/UNTARArmorIcon.png?version=32b50cee9ee6ef2348de70e9753a5d62","name":"MF-UNTAR armor vest","class":3,"zones":"Thorax and stomach\n","durability":45,"movespeed":-0.18,"turnspeed":-0.08,"ergonomics":-8},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/61/Zhuk-3_Press_armor_icon.png?version=750e5c87894a30d4a5b6c65c3232e0cf","name":"Zhuk-3 Press armor","class":3,"zones":"Thorax and stomach\n","durability":50,"movespeed":-0.1,"turnspeed":-0.05,"ergonomics":-5},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/61/6B23-1icon.png?version=bdfa0ab7477595575b7ea88f8a3c24a1","name":"6B23-1 armor (digital flora pattern)","class":3,"zones":"Thorax and stomach\n","durability":60,"movespeed":-0.11,"turnspeed":-0.09,"ergonomics":-9},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b6/BNTIKirasaNarmorIcon.png?version=872ec8adeeb5bbfa6606380ccd927777","name":"BNTI Kirasa-N armor","class":3,"zones":"Thorax and stomach\n","durability":70,"movespeed":-0.08,"turnspeed":-0.06,"ergonomics":-6},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/bb/Highcom_Trooper_TFO_armor_%28multicam%29_icon.png?version=229102336ae47769e73b383e6f0ac4a5","name":"Highcom Trooper TFO armor (multicam)","class":4,"zones":"Thorax\n","durability":70,"movespeed":-0.09,"turnspeed":-0.03,"ergonomics":-3},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2b/6B13_assault_armor_icon.gif?version=7b13709250a8ba96fd9fbbf03f1cea56","name":"6B13 assault armor","class":4,"zones":"Thorax and stomach\n","durability":47,"movespeed":-0.12,"turnspeed":-0.05,"ergonomics":-5},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/79/6B23-2_armorIcon.png?version=dddf80018c15906d70c04f11ed9aba11","name":"6B23-2 armor (mountain flora pattern)","class":4,"zones":"Thorax and stomach\n","durability":55,"movespeed":-0.11,"turnspeed":-0.09,"ergonomics":-9},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a1/GZHELKArmorIcon.png?version=7b3b359b4b2da32088043e62af02a1cf","name":"BNTI Gzhel-K armor","class":4,"zones":"Thorax and stomach\n","durability":75,"movespeed":-0.1,"turnspeed":-0.04,"ergonomics":-4},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e9/FORT_Redut-M_body_armor_icon.png?version=f51faed2f755ef6087584e71b9c2d156","name":"FORT Redut-M body armor","class":5,"zones":"Thorax and stomach\n","durability":57,"movespeed":-0.13,"turnspeed":-0.11,"ergonomics":-11},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d9/6B13_M_icon.png?version=0a1f6a57afe6e580d34597ebbc628647","name":"6B13 M assault armor (tan)","class":5,"zones":"Thorax and stomach\n","durability":60,"movespeed":-0.09,"turnspeed":-0.05,"ergonomics":-5},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/26/Gen4hmk.png?version=ead6acefb5a64531f519fc0d79283c35","name":"IOTV Gen4 armor (high mobility kit)","class":5,"zones":"Thorax and stomach\n","durability":62,"movespeed":-0.11,"turnspeed":-0.11,"ergonomics":-11},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/0/05/Gen4assault.png/250px-Gen4assault.png?version=f22e61fb3698871c6418b580b2dee1e0","name":"IOTV Gen4 armor (assault kit)","class":5,"zones":"Thorax, arms and stomach\n","durability":68,"movespeed":-0.17,"turnspeed":-0.08,"ergonomics":-8},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/5/52/IOTVfullIcon.png/250px-IOTVfullIcon.png?version=82a2e45c0d366065eec1abb66144eb7e","name":"IOTV Gen4 armor (full protection)","class":5,"zones":"Thorax, arms and stomach\n","durability":80,"movespeed":-0.33,"turnspeed":-0.16,"ergonomics":-16},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/2/23/FORT_Redut-T5_body_armor_icon.png/250px-FORT_Redut-T5_body_armor_icon.png?version=2a3465c2fb4dfa092655fd0ed22957b8","name":"FORT Redut-T5 body armor","class":5,"zones":"Thorax, arms and stomach\n","durability":95,"movespeed":-0.37,"turnspeed":-0.14,"ergonomics":-14},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/5c/Zhuk-6a_heavy_armor_icon.png?version=2df7ef169cdc3dfc6311c7ae20fcd39c","name":"Zhuk-6a heavy armor","class":6,"zones":"Thorax and stomach\n","durability":75,"movespeed":-0.13,"turnspeed":-0.06,"ergonomics":-6},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/9/90/FORT_armor_icon.png/250px-FORT_armor_icon.png?version=549cb0f64e7432dbb61e7037d81160f2","name":"6B43 Zabralo-Sh 6A Armor","class":6,"zones":"Thorax, arms and stomach\n","durability":75,"movespeed":-0.4,"turnspeed":-0.27,"ergonomics":-27}]
-					var rigs=[{"name":"empty","url":""},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c7/6B5-16_armored_rig_icon.png?version=2b479fa257e3329dba24b4bd42a7f033","name":"6B5-16 Zh -86 \"Uley\" armored rig","class":10,"zones":"3\n","durability":null,"movespeed":-0.09,"turnspeed":-0.12,"ergonomics":-12},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/0/0f/M2Inventory.PNG/250px-M2Inventory.PNG?version=606e42a1fbbefd158eb4d138a4b52a5c","name":"ANA Tactical M2 armored rig","class":18,"zones":"3\n","durability":null,"movespeed":-0.08,"turnspeed":-0.02,"ergonomics":-2},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/3/3c/ANA_Tactical_M1_icon.png/250px-ANA_Tactical_M1_icon.png?version=00a69bf4cdf552dab6397e378ba8468a","name":"ANA Tactical M1 armored rig","class":20,"zones":"3\n","durability":null,"movespeed":-0.1,"turnspeed":-0.05,"ergonomics":-5},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/ae/AVS_icon.png?version=6b8fba98edd4e67b11c1dace38e99ca4","name":"Crye Precision AVS platecarrier","class":23,"zones":"3\n","durability":null,"movespeed":-0.1,"turnspeed":-0.02,"ergonomics":-2},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/e/ee/Wartech_TV-110_plate_carrier_icon.png/250px-Wartech_TV-110_plate_carrier_icon.png?version=da2adb7d58919ed953813317c6cdc369","name":"Wartech TV-110 plate carrier","class":23,"zones":"3\n","durability":null,"movespeed":-0.08,"turnspeed":-0.05,"ergonomics":-5},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8e/6B5-15icon.png?version=8964e9d5e4b5c7349c0bb6e785ecfa97","name":"6B5-15 Zh -86 \"Uley\" armored rig","class":10,"zones":"4\n","durability":null,"movespeed":-0.14,"turnspeed":-0.12,"ergonomics":-12},{"url":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/e/e9/TactecIcon.png/250px-TactecIcon.png?version=04488bd6f7c14faa398a79c69000cc9f","name":"5.11 Tactec plate carrier","class":18,"zones":"4\n","durability":null,"movespeed":-0.07,"turnspeed":-0.03,"ergonomics":-3}]
-					
-					helmat.forEach(t=>{
-						var e=document.createElement("option")
-						e.innerHTML=t.name
-						document.getElementById("efthm").append(e)
-					})
-					vests.forEach(t=>{
-						var e=document.createElement("option")
-						e.innerHTML=t.name
-						document.getElementById("eftve").append(e)
-					})
-					rigs.forEach(t=>{
-						var e=document.createElement("option")
-						e.innerHTML=t.name
-						document.getElementById("eftrg").append(e)
-					})
-					document.getElementById("efthm").onclick=eftgear
-					document.getElementById("eftve").onclick=eftgear					
-					document.getElementById("eftrg").onclick=eftgear
-					function getgearturn()
-					{
-						return	 (helmat[document.getElementById("efthm").selectedIndex].turnspeed ||0)
-								+(vests[document.getElementById("eftve").selectedIndex].turnspeed  ||0)
-								+(rigs[document.getElementById("eftrg").selectedIndex].turnspeed   ||0);
-					}	
-					function eftgear()
-					{
-						document.getElementById("efthmE").src=""
-						document.getElementById("eftveE").src=""
-						document.getElementById("eftrgE").src=""
-						document.getElementById("efthmE").src=helmat[document.getElementById("efthm").selectedIndex].url
-						document.getElementById("eftveE").src=vests[document.getElementById("eftve").selectedIndex].url
-						document.getElementById("eftrgE").src=rigs[document.getElementById("eftrg").selectedIndex].url
-						console.log(getgearturn())
-						document.getElementById("efttdl").innerHTML="("+100*getgearturn()+"%)"						
-					}
-					setTimeout(eftgear,1000)
-					function eftread(notload=false)
-					{
-						var fs=require("fs")
-						try{
-							var json=fs.readFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini")
-						}catch(e)
+					<script src="eft/gears.js"> </script>
+					<script>										
+						helmat.forEach(t=>{
+							var e=document.createElement("option")
+							e.innerHTML=t.name
+							document.getElementById("efthm").append(e)
+						})
+						vests.forEach(t=>{
+							var e=document.createElement("option")
+							e.innerHTML=t.name
+							document.getElementById("eftve").append(e)
+						})
+						rigs.forEach(t=>{
+							var e=document.createElement("option")
+							e.innerHTML=t.name
+							document.getElementById("eftrg").append(e)
+						})
+						document.getElementById("efthm").onclick=eftgear
+						document.getElementById("eftve").onclick=eftgear					
+						document.getElementById("eftrg").onclick=eftgear
+						function getgearturn()
 						{
-							alert("塔科夫配置文件读取错误")
+							return	 (helmat[document.getElementById("efthm").selectedIndex].turnspeed ||0)
+									+(vests[document.getElementById("eftve").selectedIndex].turnspeed  ||0)
+									+(rigs[document.getElementById("eftrg").selectedIndex].turnspeed   ||0);
+						}	
+						function eftgear()
+						{
+							document.getElementById("efthmE").src=""
+							document.getElementById("eftveE").src=""
+							document.getElementById("eftrgE").src=""
+							document.getElementById("efthmE").src=helmat[document.getElementById("efthm").selectedIndex].url
+							document.getElementById("eftveE").src=vests[document.getElementById("eftve").selectedIndex].url
+							document.getElementById("eftrgE").src=rigs[document.getElementById("eftrg").selectedIndex].url
+							console.log(getgearturn())
+							document.getElementById("efttdl").innerHTML="("+100*getgearturn()+"%)"						
 						}
-						if (!json || json.length==0)  return alert("塔科夫配置文件路径不存在")
-						json=JSON.parse(""+json)
-						if (!notload)
+						remember()
+						eftgear()
+						function eftread(notload=false)
 						{
-							document.querySelector("#eftms1").value=json["bak_MouseSensitivity"] || json["MouseSensitivity"]						
-							document.querySelector("#eftms2").value=json["MouseAimingSensitivity"]						
-							save()
-							r6drawchart()
+							var fs=require("fs")
+							try{
+								var json=fs.readFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini")
+							}catch(e)
+							{
+								alert("塔科夫配置文件读取错误")
+							}
+							if (!json || json.length==0)  return alert("塔科夫配置文件路径不存在")
+							json=JSON.parse(""+json)
+							if (!notload)
+							{
+								document.querySelector("#eftms1").value=json["bak_MouseSensitivity"] || json["MouseSensitivity"]						
+								document.querySelector("#eftms2").value=json["MouseAimingSensitivity"]						
+								save()
+								r6drawchart()
+							}
+							return json
 						}
-						return json
-					}
-					function eftwrite()
-					{
-						var json=eftread(true)						
-						json["MouseSensitivity"]=parseFloat(document.querySelector("#eftms1").value)
-						json["MouseAimingSensitivity"]=parseFloat(document.querySelector("#eftms2").value)		
-						
-						json["bak_MouseSensitivity"]=json["MouseSensitivity"]
-						if (document.getElementById("efttd").checked)
-							json["MouseSensitivity"]/=(1+getgearturn())
-						
-						try{
-							fs.writeFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini",JSON.stringify(json,null,2))
-						}catch(e)
+						function eftwrite()
 						{
-							alert("塔科夫配置文件读取错误")
-						}						
-					}
+							var json=eftread(true)						
+							json["MouseSensitivity"]=parseFloat(document.querySelector("#eftms1").value)
+							json["MouseAimingSensitivity"]=parseFloat(document.querySelector("#eftms2").value)		
+							
+							json["bak_MouseSensitivity"]=json["MouseSensitivity"]
+							if (document.getElementById("efttd").checked)
+								json["MouseSensitivity"]/=(1+getgearturn())
+							
+							try{
+								fs.writeFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini",JSON.stringify(json,null,2))
+							}catch(e)
+							{
+								alert("塔科夫配置文件读取错误")
+							}						
+						}
 					</script>
 				</div>
+				
+				<div style="   border: 1px solid #000;margin: 10px 0px;">
+					<p>战地V</p>
+					<table>
+						<tr>
+							<td>灵敏度</td>
+							<td>
+								<input id="bf5ms" class="remember" value="13" onchange="r6drawchart()"> </input><!--GstInput.MouseSensitivity-->
+								<input id="r6ms2" class="remember" value="84" onchange="r6drawchart()"> </input>
+							</td>
+						</tr>
+						<tr>
+							<td>DPI</td>
+							<td>
+								<input id="r6mdpi" class="remember"  value="400" onchange="r6drawchart()" />
+							</td>
+						</tr>
+						
+					</table>
+					
+					
+				</div>
+				
 				<script src="chart/Chart.min.js" > </script>
 				<style href="chart/Chart.min.css" > </style>	
 				<script src="d3.v5.min.js"></script>	
 				<script src="chart/hammerjs@2.0.8"></script>
 				<script src="chart/chartjs-plugin-zoom@0.7.4"></script>				
 				<script>
+				remember()
 				Chart.defaults.global.elements.line.fill = false;			
 				//let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				
-				var chartInstance
-				var zoom=5
+				var chartInstance				
 				function r6drawchart(){//setTimeout(function(){						
 					////////////////////////////////////////////////
+					var zoom=document.querySelector('#zoom').value
 					var options = {
 						type: 'scatter',  						
 						data: {
@@ -285,7 +324,7 @@ console.log(JSON.stringify(res))
 							responsive: true,
 							maintainAspectRatio: true,
 							scales: {
-								xAxes: [{ scaleLabel: {display: true,labelString: '放大倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom)},type: 'linear',position: 'bottom'}],
+								xAxes: [{ scaleLabel: {display: true,labelString: '实际放大倍率(16:9,60HFOV)'},ticks: {beginAtZero: true,max: Math.max(1,zoom)},type: 'linear',position: 'bottom'}],
 								yAxes: [{ scaleLabel: {display: true,labelString: '灵敏度倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom)}}]
 								
 							},
@@ -365,7 +404,7 @@ console.log(JSON.stringify(res))
 								,{x: 1,mtd:28800,x_named:1
 									,update:function(){ this.y=1/(1.0*(arg.eftms1/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
 									,set:function(newy){ arg.eftms1=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);  }
-									,label:"第一人称"  
+									,label:"腰射"  
 								}
 								,{x: 1.0*96/68,mtd:44300,x_named:1
 									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
@@ -400,6 +439,46 @@ console.log(JSON.stringify(res))
 						})
 						options.data.datasets.push({label: "Escape From Tarkov",data: data,showLine: true,borderColor: "#8e5ea2"})						
 					})();
+					//战地5
+					(function(){
+						var arg={
+							 a:0.00636618283677
+							,b:0.00003183091418
+							,ms:0.00312370707489
+							,dpi:1600
+						}
+						//nerdamer.solveEquations(["1/31416=a*0+b","1/7854=a*0.015+b","1/(4834*4)=a*x+b"])						
+						var data= [	
+								{x:0,y:0}
+								,{x: 1,x_named:1,label:"腰射",mtd:31416
+									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
+									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }									
+								}
+								,{x: 1.0*273/183,x_named:1.5,label:"1.5倍镜" ,mtd:45140
+									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
+									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }
+								}
+								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164 
+									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
+									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }	
+								}
+								,{x: 1.0*105/36,x_named:3,label:"3倍镜",mtd:87756
+									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
+									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }
+								}
+								,{x: 1.0*209/34,x_named:6,label:"6倍镜",mtd:174528
+									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
+									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }
+								}
+							]						
+						data.push({update:infinitY.bind(null,data)})
+						data.forEach(function(e){
+							e.update=e.update || function(){};e.set=e.set || function(){}
+							e.update()
+						})
+						console.log(JSON.stringify(data,null,1))
+						options.data.datasets.push({label: "BattleField V",data: data,showLine: true,borderColor: "#00ff00"})						
+					})();
 					//彩虹六号										
 					(function(){
 						var arg={
@@ -422,7 +501,7 @@ console.log(JSON.stringify(res))
 						}
 						var data= [	
 								{x:0,y:0}
-								,{x: 1,y: 1,label:"第一人称"}
+								,{x: 1,y: 1,label:"腰射"}
 								,{x: 1/0.9 ,  update:function(){ this.y=1/Math.min(Math.max(0.6 *arg.r6ms2*arg.XFactorAiming,0),1)}		,set:set,dms:0.6,equations:["dms=0.6"],label:"机瞄/全息/红点/反射"}
 								,{x: 1/0.35,  update:function(){ this.y=1/Math.min(Math.max(0.35*arg.r6ms2*arg.XFactorAiming,0),1)}		,set:set,dms:0.35,equations:["dms=0.35"],label:"2.5倍镜"}
 							]
@@ -490,7 +569,7 @@ console.log(JSON.stringify(res))
 				setTimeout(r6drawchart,1000)
 				</script>
 			</section>
-			<!-- ============================================================== -->
+			<!-- ===击杀提示=========================================================== -->
 			<section id="tabs-2" class="tab-panel">	
 
 				<p>此功能的原理是统计精彩击杀视频的数量来进行击杀提示，<b>需要玩家启用Nvidia Highlight并在游戏内部开启相应选项</b></p>	
@@ -582,37 +661,7 @@ console.log(JSON.stringify(res))
 			</section>
 		</div>
 		<script>
-		document.querySelectorAll(".remember").forEach(function(e){				
-			e.addEventListener('input', save)
-		})			
-		function save()
-		{
-			document.querySelectorAll(".remember").forEach(function(e){				
-				if (e.type=="checkbox")
-					localStorage.setItem(e.id,e.checked)
-				else if (e.type=="radio")
-					localStorage.setItem(e.id,e.checked)
-				else if (e.type=="select-one")
-					localStorage.setItem(e.id,e.selectedIndex)
-				else
-					localStorage.setItem(e.id,e.value)
-			})			
-		}
-		function load()
-		{
-			document.querySelectorAll(".remember").forEach(function(e){				
-				if (!(e.id in localStorage) || localStorage.getItem(e.id)=="") return
-				if (e.type=="checkbox" )
-					e.checked=localStorage.getItem(e.id)=="true"	
-				else if (e.type=="radio" )
-					e.checked=localStorage.getItem(e.id)=="true"					
-				else if (e.type=="select-one")
-					e.selectedIndex=parseInt(localStorage.getItem(e.id))
-				else
-					e.value=localStorage.getItem(e.id)
-			})			
-		}
-		setTimeout(load,1)
+		remember()		
 		</script>
   </body>
 </html>

@@ -6,7 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "electron .",
-    "make": "electron-builder --win portable"
+    "build": "electron-builder --win portable"
   },
   "keywords": [],
   "author": "wywzxxz",
