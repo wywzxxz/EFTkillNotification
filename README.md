@@ -4,10 +4,10 @@
 
 1.基于Nvidia Highlight的实时击杀提示
 
-![]( http://raw.githubusercontent.com/wywzxxz/EFTkillNotification/master/image/1.png)
+![](https://github.com/wywzxxz/EFTkillNotification/blob/master/image/2.png)
 
 2.提供彩虹六号至逃离塔科夫的鼠标灵敏度转换
-![]( http://raw.githubusercontent.com/wywzxxz/EFTkillNotification/master/image/1.png )
+![](https://github.com/wywzxxz/EFTkillNotification/blob/master/image/1.png)
 
 用户可拖拽图标中的数据结点来调整鼠标灵敏度，将鼠标悬停在数据节点上会列出更详细的信息。
 
