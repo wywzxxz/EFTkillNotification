@@ -280,23 +280,86 @@
 				
 				<div style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>战地V</p>
+					<label>游戏配置文件目录</label>
+					<input id="bf5config"class="remember" style="width:100%"value="%USERPROFILE%\Documents\Battlefield V\settings" />					
+					<br>
 					<table>
 						<tr>
 							<td>灵敏度</td>
-							<td>
-								<input id="bf5ms" class="remember" value="13" onchange="r6drawchart()"> </input><!--GstInput.MouseSensitivity-->
-								<input id="r6ms2" class="remember" value="84" onchange="r6drawchart()"> </input>
+							<td>								
+								<input id="bf5ms" class="remember" value=0.003124 onchange="r6drawchart()"> </input>
 							</td>
 						</tr>
 						<tr>
+							<td>1.25倍镜系数</td>
+							<td>
+								<input id="bf5ms_1_25" class="remember" value=1.00 onchange="r6drawchart()"> </input><!-- GstInput.SoldierZoomSensitivity1x25 -->
+							</td>
+						</tr>
+						<tr>
+							<td>1.50倍镜系数</td>
+							<td>
+								<input id="bf5ms_1_50" class="remember" value=1.00 onchange="r6drawchart()"> </input><!-- GstInput.SoldierZoomSensitivity1x50 -->
+							</td>
+						</tr>
+						<tr>
+							<td>2倍镜系数</td>
+							<td>
+								<input id="bf5ms_2" class="remember" value=1.00 onchange="r6drawchart()"> </input><!-- GstInput.SoldierZoomSensitivity2x00 -->
+							</td>
+						</tr>
+						<tr>
+							<td>3倍镜系数</td>
+							<td>
+								<input id="bf5ms_3" class="remember" value=1.00 onchange="r6drawchart()"> </input><!-- GstInput.SoldierZoomSensitivity3x00 -->
+							</td>
+						</tr>
+						<tr>
+							<td>6倍镜系数</td>
+							<td>
+								<input id="bf5ms_6" class="remember" value=1.00 onchange="r6drawchart()"> </input><!-- GstInput.SoldierZoomSensitivity6x00 -->								
+							</td>
+						</tr>						
+
+						<tr>
 							<td>DPI</td>
 							<td>
-								<input id="r6mdpi" class="remember"  value="400" onchange="r6drawchart()" />
+								<input id="bf5dpi" class="remember"  value="1600" onchange="r6drawchart()" />
 							</td>
 						</tr>
 						
 					</table>
-					
+					<button id="bf5read">读取设置</button>
+					<button id="bf5write">写入设置</button>(重启生效)<br>
+					<script>
+					(function(){
+						function read(){
+							var path=parsePath(document.querySelector("#bf5config").value+"\\PROFSAVE_profile_synced")
+							console.log(path)
+							var text=""+fs.readFileSync(path)
+							var json={}
+							text=text.split(/\r?\n/)
+							text.forEach(function(e){
+								e=e.split(/\s+/)
+								json[e[0]]=e[1]
+								e=e[0]
+							})
+							json.order=text							
+							return json							
+						}
+						document.querySelector("#bf5read").onclick=function(){
+							var json=read(true);
+							document.querySelector("#bf5ms").value=json["GstInput.MouseSensitivity"]
+							document.querySelector("#bf5ms_1_25").value=json["GstInput.SoldierZoomSensitivity1x25"]
+							document.querySelector("#bf5ms_1_50").value=json["GstInput.SoldierZoomSensitivity1x50"]
+							document.querySelector("#bf5ms_2").value=json["GstInput.SoldierZoomSensitivity2x00"]
+							document.querySelector("#bf5ms_3").value=json["GstInput.SoldierZoomSensitivity3x00"]
+							document.querySelector("#bf5ms_6").value=json["GstInput.SoldierZoomSensitivity6x00"]
+							save()							
+							r6drawchart()
+						}
+					})();
+					</script>
 					
 				</div>
 				
@@ -310,9 +373,9 @@
 				Chart.defaults.global.elements.line.fill = false;			
 				//let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				
 				var chartInstance				
-				function r6drawchart(){//setTimeout(function(){						
-					////////////////////////////////////////////////
+				function r6drawchart(){//setTimeout(function(){		
 					var zoom=document.querySelector('#zoom').value
+					////////////////////////////////////////////////									
 					var options = {
 						type: 'scatter',  						
 						data: {
@@ -340,27 +403,30 @@
 										return res
 									}
 									,footer:function(ti,ob)
-									{										
-										var res=""										
-										var x=ti[0].xLabel
-										var val=ti[0].yLabel
-										var block={};ti.forEach(t=>{block[t.datasetIndex+","+t.index]=true})
-										ob.datasets.forEach((dt,dti)=>{
-											dt.data.forEach((d,i)=>{												
-												if ( Math.abs(val-d.y)<0.2 && !block[dti+","+i] )
-													res+="(临近)"+dt.label+" "+d.label+"\t"+(d.y-val).toFixed(10)+"\n"
-												if (i<=0) return
-												var c=dt.data[i-1]
-												if (c.x<x && x<d.x)
-												{													
-													var y=c.y+(x-c.x)*(d.y-c.y)/(d.x-c.x)													
-													if ( Math.abs(val-y)<0.2)
-													{														
-														res+="(临近)"+dt.label+" 插值\t"+(y-val).toFixed(10)+"\n"	
-													}
-												}	
-											})
+									{
+										var res=""
+										var x=parseFloat(ti[0].xLabel)
+										var y=parseFloat(ti[0].yLabel)
+										var block={
+											func:function(datasetIndex,index){return datasetIndex+","+index}
+											,test:function(datasetIndex,index){return this[ this.func(datasetIndex,index) ] }
+											,set:function(datasetIndex,index){this[ this.func(datasetIndex,index) ]=true;this.points.push({datasetIndex:datasetIndex,index:index}) }
+											,points:[]
+			
+										};
+										ti.forEach(t=>{block.set(t.datasetIndex,t.index)})										
+										var arr=claculateY(x,block)
+										//console.log(JSON.stringify(arr,null,2))
+										var ar=[]
+										arr.forEach((json)=>{
+											if (Math.abs(y-json.y)>0.1) return
+											//if (json.cat==0 && ti[0].datasetIndex==json.dti && json.pi==ti[0].index) return
+											d=(json.y-y)
+											ar.push([Math.abs(d),json.label+"    |    误差 "+d.toFixed(10)+"\n"])											
 										})
+										ar.sort((a,b)=>a[0]-b[0])										
+										ar.forEach(t=>res+=(t[1]))										
+										//console.log(res)
 										return res
 									}
 								}
@@ -432,7 +498,7 @@
 									,label:"x4(HAMR,DR1/4xFDE,PSO 1 4x24"  
 								}
 							]
-						data.push({update:infinitY.bind(null,data)})
+						data.push({update:infinitY.bind(null,data),label:"∞"})
 						data.forEach(function(e){
 							e.update=e.update || function(){};e.set=e.set || function(){}
 							e.update()
@@ -443,21 +509,31 @@
 					(function(){
 						var arg={
 							 a:0.00636618283677
-							,b:0.00003183091418
-							,ms:0.00312370707489
-							,dpi:1600
+							,b:0.00003183091418							
+							,bf5ms:parseFloat( document.querySelector("#bf5ms").value )														
+							,bf5ms_1_25:parseFloat( document.querySelector("#bf5ms_1_25").value )
+							,bf5ms_1_50:parseFloat( document.querySelector("#bf5ms_1_50").value )
+							,bf5ms_2:parseFloat( document.querySelector("#bf5ms_2").value )
+							,bf5ms_3:parseFloat( document.querySelector("#bf5ms_3").value )
+							,bf5ms_6:parseFloat( document.querySelector("#bf5ms_6").value )					
+							,bf5dpi:parseInt( document.querySelector("#bf5dpi").value )							
 						}
 						//nerdamer.solveEquations(["1/31416=a*0+b","1/7854=a*0.015+b","1/(4834*4)=a*x+b"])						
 						var data= [	
 								{x:0,y:0}
-								,{x: 1,x_named:1,label:"腰射",mtd:31416
-									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
-									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }									
+								,{x: 1,x_named:1,label:"腰射/1倍镜",mtd:31416
+									,update:function(){ this.y=1.0/(arg.a*arg.bf5ms+arg.b)/(arg.bf5dpi/400)*this.mtd/31416/4834      } 
+									,set:function(newy){ arg.bf5ms=(1.0/newy/(arg.bf5dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }									
 								}
 								,{x: 1.0*273/183,x_named:1.5,label:"1.5倍镜" ,mtd:45140
-									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
-									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }
+									,update:function(){ this.y=1.0/(arg.a*arg.bf5ms*arg.bf5ms_1_25+arg.b)/(arg.bf5dpi/400)*this.mtd/31416/4834      } 
+									,set:function(newy){ arg.bf5ms_1_25=(1.0/newy/(arg.bf5dpi/400)*this.mtd/31416/4834-arg.b)/arg.a/arg.bf5ms;upload(arg);  }
 								}
+								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164 
+									,update:function(){ this.y=1.0/(arg.a*arg.bf5ms*arg.bf5ms_1_50+arg.b)/(arg.bf5dpi/400)*this.mtd/31416/4834      } 
+									,set:function(newy){ arg.bf5ms_1_50=(1.0/newy/(arg.bf5dpi/400)*this.mtd/31416/4834-arg.b)/arg.a/arg.bf5ms;upload(arg);  }
+								}
+								/*
 								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164 
 									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
 									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }	
@@ -470,13 +546,13 @@
 									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
 									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }
 								}
+								*/
 							]						
-						data.push({update:infinitY.bind(null,data)})
+						data.push({update:infinitY.bind(null,data),label:"∞"})
 						data.forEach(function(e){
 							e.update=e.update || function(){};e.set=e.set || function(){}
 							e.update()
-						})
-						console.log(JSON.stringify(data,null,1))
+						})						
 						options.data.datasets.push({label: "BattleField V",data: data,showLine: true,borderColor: "#00ff00"})						
 					})();
 					//彩虹六号										
@@ -505,7 +581,7 @@
 								,{x: 1/0.9 ,  update:function(){ this.y=1/Math.min(Math.max(0.6 *arg.r6ms2*arg.XFactorAiming,0),1)}		,set:set,dms:0.6,equations:["dms=0.6"],label:"机瞄/全息/红点/反射"}
 								,{x: 1/0.35,  update:function(){ this.y=1/Math.min(Math.max(0.35*arg.r6ms2*arg.XFactorAiming,0),1)}		,set:set,dms:0.35,equations:["dms=0.35"],label:"2.5倍镜"}
 							]
-						data.push({update:infinitY.bind(null,data)})
+						data.push({update:infinitY.bind(null,data),label:"∞"})
 						data.forEach(function(e){
 							e.update=e.update || function(){};e.set=e.set || function(){}
 							e.update()
@@ -518,12 +594,71 @@
 					d3.select(chartInstance.chart.canvas).call(		d3.drag().container(chartInstance.chart.canvas).on('start', getElement).on('drag', updateData)   );
 
 					var element, scale, datasetIndex, index, value
+					var nearbypoint=[]
 					function getElement () {
 						var e = d3.event.sourceEvent
 						element = chartInstance.getElementAtEvent(e)[0]		
 						if (!element) {scale=null;return }
 						scale = element['_yScale'].id
+						//获取吸附结点列表
+						datasetIndex = element['_datasetIndex']
+						index = element['_index']
+						value = chartInstance.scales[scale].getValueForPixel(e.layerY)						
+						var data=chartInstance.data.datasets[datasetIndex].data		
+						var x=data[index].x
+						var block={
+							func:function(datasetIndex,index){return datasetIndex+","+index}
+							,test:function(datasetIndex,index){return this[ this.func(datasetIndex,index) ] }
+							,set:function(datasetIndex,index){this[ this.func(datasetIndex,index) ]=true;this.points.push({datasetIndex:datasetIndex,index:index}) }
+							,points:[]
+
+						};
+						block.set(datasetIndex,index)											
+						nearbypoint=claculateY(x,block)
+						console.log(nearbypoint)
 					}
+					function claculateY(X,block)
+					{						
+						var res=[]
+						chartInstance.data.datasets.forEach((dt,dti)=>{
+							if (dt._meta[0] && dt._meta[0].hidden) return 
+							dt.data.forEach((p1,p1i)=>{if(block.test(dti,p1i)) return							
+								//计算相近点
+								if (p1.label)
+									res.push({y:p1.y,label:"(临近)"+dt.label+" "+p1.label,cat:0,dti:dti,pi:p1i})													
+								dt.data.forEach((p2,p2i)=>{if(block.test(dti,p2i)) return			
+									if (p1i>=p2i || p2i==0) return 									
+									if (Math.abs(p2.x-p1.x)<1E-6) return									
+									//计算相近斜率
+									var blocky={}
+									block.points.forEach(function(p){
+										qi=p.index-1
+										var tt=chartInstance.data.datasets[p.datasetIndex].data
+										while (qi>=0 && Math.abs(tt[qi].x-tt[p.index].x)<1E-2) qi-=1;
+										if (qi<0) return
+										q=chartInstance.data.datasets[p.datasetIndex].data[qi]
+										if (!q) return
+										a=(p2.y-p1.y)/(p2.x-p1.x)										
+										if (p1.label && p2.label && p2.label!="∞")
+										{
+											y=q.y+a*(X-q.x)											
+											res.push({y:y,label:"(斜率)"+" ["+q.label+" ➡ "+tt[p.index].label+"]  "+dt.label+" "+p1.label+" ➡ "+p2.label,cat:1})
+											blocky[y]=true
+										}
+									})
+									//计算插值
+									if (p1.x<=X && X<=p2.x && p1i+1==p2i)
+									{
+										y=p1.y+(p2.y-p1.y)/(p2.x-p1.x)*(X-p1.x)
+										res.push({y:y,label:"(插值)"+dt.label+" "+p1.label+" ➡ "+p2.label,strong:1})
+									}
+									
+								})
+							})
+						})
+						res.sort((a,b)=>1000*(a.cat-b.cat)+a.y-b.y)
+						return res					
+					}						
 					function updateData () {
 						if (!element) return
 						var e = d3.event.sourceEvent
@@ -535,6 +670,16 @@
 						//实现吸附功能						
 						var x=data[index].x
 						var nv=null
+						function fun(t,value)
+						{
+							if (t.strong) return 0.1*Math.abs(t.y-value)
+							return Math.abs(t.y-value)
+						}
+						nearbypoint.forEach(function(t){
+							if ( nv==null || fun(nv,value)>fun(t,value)  )
+								nv=t
+						})
+						/*
 						chartInstance.data.datasets.forEach((dt,dti)=>{							
 							if (dt._meta[0] && dt._meta[0].hidden) return
 							dt.data.forEach((d,i)=>{
@@ -552,9 +697,9 @@
 									}
 								}
 							})
-						})												
-						if (nv!=null && Math.abs(nv-value)<0.02)
-						value=nv
+						})*/								
+						console.log(nv,value-nv.y)
+						if (nv!=null && Math.abs(nv.y-value)<0.02) value=nv.y
 						//////////////////
 																
 						data[index].set(value)
