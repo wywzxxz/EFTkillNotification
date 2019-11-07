@@ -287,7 +287,7 @@
 						<tr>
 							<td>灵敏度</td>
 							<td>								
-								<input id="bf5ms" class="remember" value=0.003124 onchange="r6drawchart()"> </input>
+								<input id="bf5ms" class="remember" value=0.00312370707489 onchange="r6drawchart()"> </input>
 							</td>
 						</tr>
 						<tr>
@@ -337,14 +337,13 @@
 							var path=parsePath(document.querySelector("#bf5config").value+"\\PROFSAVE_profile_synced")
 							console.log(path)
 							var text=""+fs.readFileSync(path)
-							var json={}
+							var json={order:[]}
 							text=text.split(/\r?\n/)
 							text.forEach(function(e){
 								e=e.split(/\s+/)
-								json[e[0]]=e[1]
-								e=e[0]
-							})
-							json.order=text							
+								json[e[0]]=e[1]								
+								json.order.push(e[0])
+							})										
 							return json							
 						}
 						document.querySelector("#bf5read").onclick=function(){
@@ -357,6 +356,19 @@
 							document.querySelector("#bf5ms_6").value=json["GstInput.SoldierZoomSensitivity6x00"]
 							save()							
 							r6drawchart()
+						}
+						document.querySelector("#bf5write").onclick=function(){
+							var json=read(true);
+							json["GstInput.MouseSensitivity"]=parseFloat(document.querySelector("#bf5ms").value)
+							json["GstInput.SoldierZoomSensitivity1x25"]=parseFloat(document.querySelector("#bf5ms_1_25").value)
+							json["GstInput.SoldierZoomSensitivity1x50"]=parseFloat(document.querySelector("#bf5ms_1_50").value)
+							json["GstInput.SoldierZoomSensitivity2x00"]=parseFloat(document.querySelector("#bf5ms_2").value)
+							json["GstInput.SoldierZoomSensitivity3x00"]=parseFloat(document.querySelector("#bf5ms_3").value)
+							json["GstInput.SoldierZoomSensitivity6x00"]=parseFloat(document.querySelector("#bf5ms_6").value)
+							var res=""
+							json.order.forEach(t=>res+=t+" "+json[t]+"\n")
+							var path=parsePath(document.querySelector("#bf5config").value+"\\PROFSAVE_profile_synced")
+							fs.writeFileSync(path,res)
 						}
 					})();
 					</script>
@@ -388,7 +400,7 @@
 							maintainAspectRatio: true,
 							scales: {
 								xAxes: [{ scaleLabel: {display: true,labelString: '实际放大倍率(16:9,60HFOV)'},ticks: {beginAtZero: true,max: Math.max(1,zoom)},type: 'linear',position: 'bottom'}],
-								yAxes: [{ scaleLabel: {display: true,labelString: '灵敏度倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom)}}]
+								yAxes: [{ scaleLabel: {display: true,labelString: '灵敏度倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom),min: 0}}]
 								
 							},
 							elements: {line: {tension: 0}}
@@ -519,34 +531,33 @@
 							,bf5dpi:parseInt( document.querySelector("#bf5dpi").value )							
 						}
 						//nerdamer.solveEquations(["1/31416=a*0+b","1/7854=a*0.015+b","1/(4834*4)=a*x+b"])						
+
 						var data= [	
 								{x:0,y:0}
 								,{x: 1,x_named:1,label:"腰射/1倍镜",mtd:31416
-									,update:function(){ this.y=1.0/(arg.a*arg.bf5ms+arg.b)/(arg.bf5dpi/400)*this.mtd/31416/4834      } 
-									,set:function(newy){ arg.bf5ms=(1.0/newy/(arg.bf5dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }									
+									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)+arg.b)*(arg.bf5dpi/400)*4834     } 
+									,set:function(newy){ arg.bf5ms=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416);upload(arg);  }								
 								}
-								,{x: 1.0*273/183,x_named:1.5,label:"1.5倍镜" ,mtd:45140
-									,update:function(){ this.y=1.0/(arg.a*arg.bf5ms*arg.bf5ms_1_25+arg.b)/(arg.bf5dpi/400)*this.mtd/31416/4834      } 
-									,set:function(newy){ arg.bf5ms_1_25=(1.0/newy/(arg.bf5dpi/400)*this.mtd/31416/4834-arg.b)/arg.a/arg.bf5ms;upload(arg);  }
+								,{x: 1.0*44/35,x_named:1.25,label:"1.25倍镜" ,mtd:38224,ms:"bf5ms_1_25"
+									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
+									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
 								}
-								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164 
-									,update:function(){ this.y=1.0/(arg.a*arg.bf5ms*arg.bf5ms_1_50+arg.b)/(arg.bf5dpi/400)*this.mtd/31416/4834      } 
-									,set:function(newy){ arg.bf5ms_1_50=(1.0/newy/(arg.bf5dpi/400)*this.mtd/31416/4834-arg.b)/arg.a/arg.bf5ms;upload(arg);  }
+								,{x: 1.0*273/183,x_named:1.5,label:"1.5倍镜" ,mtd:45140,ms:"bf5ms_1_50"
+									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
+									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
 								}
-								/*
-								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164 
-									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
-									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }	
+								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164,ms:"bf5ms_2"
+									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
+									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
 								}
-								,{x: 1.0*105/36,x_named:3,label:"3倍镜",mtd:87756
-									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
-									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }
+								,{x: 1.0*105/36,x_named:3,label:"3倍镜" ,mtd:87756,ms:"bf5ms_3"
+									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
+									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
 								}
-								,{x: 1.0*209/34,x_named:6,label:"6倍镜",mtd:174528
-									,update:function(){ this.y=1.0/(arg.a*arg.ms+arg.b)/(arg.dpi/400)*this.mtd/31416/4834      } 
-									,set:function(newy){ arg.ms=(1.0/newy/(arg.dpi/400)*this.mtd/31416/4834-arg.b)/arg.a;upload(arg);  }
+								,{x: 1.0*209/34,x_named:6,label:"6倍镜" ,mtd:174528,ms:"bf5ms_6"
+									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
+									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
 								}
-								*/
 							]						
 						data.push({update:infinitY.bind(null,data),label:"∞"})
 						data.forEach(function(e){
@@ -625,7 +636,7 @@
 							dt.data.forEach((p1,p1i)=>{if(block.test(dti,p1i)) return							
 								//计算相近点
 								if (p1.label)
-									res.push({y:p1.y,label:"(临近)"+dt.label+" "+p1.label,cat:0,dti:dti,pi:p1i})													
+									res.push({y:p1.y,label:"(临近)"+dt.label+" "+p1.label,cat:0,dti:dti,pi:p1i,strong:0.3})													
 								dt.data.forEach((p2,p2i)=>{if(block.test(dti,p2i)) return			
 									if (p1i>=p2i || p2i==0) return 									
 									if (Math.abs(p2.x-p1.x)<1E-6) return									
@@ -650,7 +661,7 @@
 									if (p1.x<=X && X<=p2.x && p1i+1==p2i)
 									{
 										y=p1.y+(p2.y-p1.y)/(p2.x-p1.x)*(X-p1.x)
-										res.push({y:y,label:"(插值)"+dt.label+" "+p1.label+" ➡ "+p2.label,strong:1})
+										res.push({y:y,label:"(插值)"+dt.label+" "+p1.label+" ➡ "+p2.label,strong:0.5})
 									}
 									
 								})
@@ -672,32 +683,13 @@
 						var nv=null
 						function fun(t,value)
 						{
-							if (t.strong) return 0.1*Math.abs(t.y-value)
-							return Math.abs(t.y-value)
+							if (t.strong==undefined) t.strong=1
+							return t.strong*Math.abs(t.y-value)
 						}
 						nearbypoint.forEach(function(t){
 							if ( nv==null || fun(nv,value)>fun(t,value)  )
 								nv=t
-						})
-						/*
-						chartInstance.data.datasets.forEach((dt,dti)=>{							
-							if (dt._meta[0] && dt._meta[0].hidden) return
-							dt.data.forEach((d,i)=>{
-								if (datasetIndex==dti && i==index) return
-								if ( nv==null || Math.abs(nv-value)>Math.abs( d.y-value  ))
-									nv=d.y								
-								if (i<=0) return
-								var c=dt.data[i-1]
-								if (c.x<x && x<d.x)
-								{
-									var y=c.y+(x-c.x)*(d.y-c.y)/(d.x-c.x)
-									if ( nv==null || Math.abs(nv-value)>Math.abs( y-value  ))
-									{
-										nv=y																			
-									}
-								}
-							})
-						})*/								
+						})								
 						console.log(nv,value-nv.y)
 						if (nv!=null && Math.abs(nv.y-value)<0.02) value=nv.y
 						//////////////////
