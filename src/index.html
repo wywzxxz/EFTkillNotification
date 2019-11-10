@@ -138,6 +138,7 @@
 			<!-- ====鼠标灵敏度调整========================================================== -->
 			<section id="tabs-1" class="tab-panel">		
 				<p>此功能通过调整配置文件来统一不同游戏的灵敏度</p>
+				360°鼠标行程(英尺)<input id="travel" class="remember" value=12.087115384615384 onchange="r6drawchart()"> </input>(=鼠标行程(像素)/DPI,如无需求请勿手工改变此值)
 				<canvas id="mschart" width=400 height=200 ></canvas>
 				<input id="zoom" class="remember" value=5 hidden > </input>
 				<button onclick="document.querySelector('#zoom').value=parseFloat(document.querySelector('#zoom').value)-1;save();r6drawchart()">放大</button>
@@ -164,14 +165,14 @@
 							<td>
 								<input id="r6mdpi" class="remember"  value="400" onchange="r6drawchart()" />
 							</td>
-						</tr>
-						
+						</tr>												
 					</table>
-					
+					<button id="r6calibration">以此为基准</button>
 					
 				</div>									
 				<div style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>逃离塔科夫</p>
+					<button id="eftcalibration">以此为基准</button><br>
 					<label>游戏配置文件目录</label>
 					<input id="eftconfig"class="remember" style="width:100%"value="%USERPROFILE%\Documents\Escape from Tarkov" />
 					<br>
@@ -186,7 +187,7 @@
 						<tr>
 							<td>DPI</td>
 							<td>
-								<input id="eftmdpi" class="remember"  value="1600" onchange="r6drawchart()" />
+								<input id="eftdpi" class="remember"  value="1600" onchange="r6drawchart()" />
 							</td>
 						</tr>
 					</table>
@@ -196,7 +197,7 @@
 					弹挂:<select id="eftrg" class="remember"></select><br>
 					防弹衣:<select id="eftve" class="remember"></select><br>					
 					<img id="efthmE"/><img id="eftrgE"/><img id="eftveE"/><br>
-					
+										
 					<button onclick="eftread()">读取设置</button>
 					<button onclick="eftwrite()">写入设置</button>(重启生效)<br>
 					<script src="eft/gears.js"> </script>
@@ -280,12 +281,13 @@
 				
 				<div style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>战地V</p>
+					<button id="bf5calibration">以此为基准</button><br>
 					<label>游戏配置文件目录</label>
 					<input id="bf5config"class="remember" style="width:100%"value="%USERPROFILE%\Documents\Battlefield V\settings" />					
 					<br>
 					<table>
 						<tr>
-							<td>灵敏度</td>
+							<td>GstInput.MouseSensitivity</td>
 							<td>								
 								<input id="bf5ms" class="remember" value=0.00312370707489 onchange="r6drawchart()"> </input>
 							</td>
@@ -329,6 +331,7 @@
 						</tr>
 						
 					</table>
+					
 					<button id="bf5read">读取设置</button>
 					<button id="bf5write">写入设置</button>(重启生效)<br>
 					<script>
@@ -383,10 +386,19 @@
 				<script>
 				remember()
 				Chart.defaults.global.elements.line.fill = false;			
-				//let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				
+				let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				
+				nerdamer.set('SOLUTIONS_AS_OBJECT', true);
+				function which(f,name,x)
+				{
+					for (var i=0;i<f.length;++i)
+						if (f[i][name]==x)
+							return f[i]
+					return undefined
+				}
 				var chartInstance				
 				function r6drawchart(){//setTimeout(function(){		
 					var zoom=document.querySelector('#zoom').value
+					var travel=parseFloat(document.querySelector('#travel').value)
 					////////////////////////////////////////////////									
 					var options = {
 						type: 'scatter',  						
@@ -400,7 +412,7 @@
 							maintainAspectRatio: true,
 							scales: {
 								xAxes: [{ scaleLabel: {display: true,labelString: '实际放大倍率(16:9,60HFOV)'},ticks: {beginAtZero: true,max: Math.max(1,zoom)},type: 'linear',position: 'bottom'}],
-								yAxes: [{ scaleLabel: {display: true,labelString: '灵敏度倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom),min: 0}}]
+								yAxes: [{ scaleLabel: {display: true,labelString: '灵敏度减缓倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom),min: 0}}]
 								
 							},
 							elements: {line: {tension: 0}}
@@ -468,47 +480,41 @@
 					}
 					function reverseset()
 					{
-						this.y=this.set(null)
+						this.y=this.set(null)						
 					}
 					//逃离塔科夫
 					(function(){
 						var arg={
 							 eftms1:parseFloat( document.querySelector("#eftms1").value )
 							,eftms2:parseFloat( document.querySelector("#eftms2").value )
-							,eftmdpi:parseInt( document.querySelector("#eftmdpi").value )
+							,eftdpi:parseInt( document.querySelector("#eftdpi").value )
+							,basems:0.1
+						}
+						document.querySelector("#eftcalibration").onclick=function()
+						{					
+							document.querySelector('#travel').value=travel*data[1].y
+							save()
+							r6drawchart()
+						}
+						function update()
+						{							
+							this.y=this.mtd/(arg[this.ms]/arg.basems)
+							this.y=this.y/arg.eftdpi/travel
+						}
+						function set(newy)
+						{
+							newy=newy*arg.eftdpi*travel
+							arg[this.ms]=this.mtd*arg.basems/newy						
+							upload(arg)
 						}
 						var data= [	
 								{x:0,y:0}
-								,{x: 1,mtd:28800,x_named:1
-									,update:function(){ this.y=1/(1.0*(arg.eftms1/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
-									,set:function(newy){ arg.eftms1=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);  }
-									,label:"腰射"  
-								}
-								,{x: 1.0*96/68,mtd:44300,x_named:1
-									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
-									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
-									,label:"机瞄"  
-								}
-								,{x: 1.0*96/68,mtd:48000,x_named:1
-									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
-									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
-									,label:"全息"  
-								}
-								,{x: 1.0*205/68,mtd:57600,x_named:2
-									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
-									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
-									,label:"Monstr. 2"
-								}								
-								,{x: 1.0*397/79,mtd:96000,x_named:3.5
-									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
-									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
-									,label:"PU 3.5x"  
-								}
-								,{x: 1.0*455/68,mtd:144000,x_named:4
-									,update:function(){ this.y=1/(1.0*(arg.eftms2/0.1)/(this.mtd/4834)*(arg.eftmdpi/400))} 
-									,set:function(newy){ arg.eftms2=0.1*(1/newy)*(this.mtd/4834)/(arg.eftmdpi/400);upload(arg);}
-									,label:"x4(HAMR,DR1/4xFDE,PSO 1 4x24"  
-								}
+								,{x: 1,mtd:28800,x_named:1,ms:"eftms1",label:"腰射",update:update,set:set}
+								,{x: 1.0*96/68,mtd:44300,x_named:1,ms:"eftms2",label:"机瞄",update:update,set:set}
+								,{x: 1.0*96/68,mtd:48000,x_named:1,ms:"eftms2",label:"全息",update:update,set:set}
+								,{x: 1.0*205/68,mtd:57600,x_named:2,ms:"eftms2",label:"Monstr. 2",update:update,set:set}
+								,{x: 1.0*397/79,mtd:96000,x_named:3.5,ms:"eftms2",label:"PU 3.5x",update:update,set:set}
+								,{x: 1.0*455/68,mtd:144000,x_named:4,ms:"eftms2",label:"x4(HAMR,DR1/4xFDE,PSO 1 4x24",update:update,set:set}
 							]
 						data.push({update:infinitY.bind(null,data),label:"∞"})
 						data.forEach(function(e){
@@ -529,34 +535,44 @@
 							,bf5ms_3:parseFloat( document.querySelector("#bf5ms_3").value )
 							,bf5ms_6:parseFloat( document.querySelector("#bf5ms_6").value )					
 							,bf5dpi:parseInt( document.querySelector("#bf5dpi").value )							
+							,mtd_1:31416
 						}
-						//nerdamer.solveEquations(["1/31416=a*0+b","1/7854=a*0.015+b","1/(4834*4)=a*x+b"])						
+						document.querySelector("#bf5calibration").onclick=function()
+						{					
+							document.querySelector('#travel').value=travel*data[1].y
+							save()
+							r6drawchart()
+						}						
+						var t=nerdamer.solveEquations(["1/31416=a*0+b","1/7854=a*0.015+b","1/(4834*4)=a*x+b"])
+						arg.a=t.a
+						arg.b=t.b						
+						function update()
+						{
+							this.y=1/(arg.a*arg.bf5ms+arg.b)/arg[this.ms]*(this.mtd/arg.mtd_1)				
+							this.y= (this.y/arg.bf5dpi) / travel
+						}
+												
+						function set(newy){
+							newy=newy* travel *arg.bf5dpi																				
+							arg[this.ms]=1/(newy*(arg.a*arg.bf5ms+arg.b)/(this.mtd/arg.mtd_1))
+							upload(arg)
+						}
+						//,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
+						//,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
 
 						var data= [	
 								{x:0,y:0}
-								,{x: 1,x_named:1,label:"腰射/1倍镜",mtd:31416
-									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)+arg.b)*(arg.bf5dpi/400)*4834     } 
-									,set:function(newy){ arg.bf5ms=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416);upload(arg);  }								
+								,{x_named:1.00,x: 1,label:"腰射/1倍镜",mtd:arg.mtd_1
+									,update:function(){this.y=1/(arg.a*arg.bf5ms+arg.b);this.y= (this.y/arg.bf5dpi) / travel}
+									,set:function(newy){newy=newy* travel *arg.bf5dpi;arg.bf5ms=(1/newy-arg.b)/arg.a;upload(arg)}
 								}
-								,{x: 1.0*44/35,x_named:1.25,label:"1.25倍镜" ,mtd:38224,ms:"bf5ms_1_25"
-									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
-									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
-								}
-								,{x: 1.0*273/183,x_named:1.5,label:"1.5倍镜" ,mtd:45140,ms:"bf5ms_1_50"
-									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
-									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
-								}
-								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164,ms:"bf5ms_2"
-									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
-									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
-								}
-								,{x: 1.0*105/36,x_named:3,label:"3倍镜" ,mtd:87756,ms:"bf5ms_3"
-									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
-									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
-								}
-								,{x: 1.0*209/34,x_named:6,label:"6倍镜" ,mtd:174528,ms:"bf5ms_6"
-									,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
-									,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
+								,{x_named:1.25,x: 1.0*44/35,label:"1.25倍镜" ,mtd:38228,ms:"bf5ms_1_25",update:update,set:set}
+								,{x: 1.0*273/183,x_named:1.5,label:"1.5倍镜" ,mtd:45140,ms:"bf5ms_1_50",update:update,set:set}
+								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164,ms:"bf5ms_2",update:update,set:set}
+								,{x: 1.0*105/36,x_named:3,label:"3倍镜" ,mtd:87756,ms:"bf5ms_3",update:update,set:set}								
+								,{x: 1.0*209/34,x_named:6,label:"6倍镜" ,mtd:174528,ms:"bf5ms_6",update:update,set:set
+									//,update:function(){this.y=(this.mtd/31456)/arg[this.ms]/(arg.bf5dpi/400)/4834/(arg.a*arg.bf5ms+arg.b)  } 
+									//,set:function(newy){ arg[this.ms]=Math.min(2,Math.max(0,(this.mtd/31456)/newy/(arg.bf5dpi/400)/4834/(arg.a*arg.bf5ms+arg.b)));upload(arg);  }
 								}
 							]						
 						data.push({update:infinitY.bind(null,data),label:"∞"})
@@ -571,26 +587,33 @@
 						var arg={
 							XFactorAiming:parseFloat( document.querySelector("#XFactorAiming").value ),
 							r6ms1:parseInt( document.querySelector("#r6ms1").value ),
-							r6ms2:parseInt( document.querySelector("#r6ms2").value )						
+							r6ms2:parseInt( document.querySelector("#r6ms2").value ),
+							r6mdpi:parseInt( document.querySelector("#r6mdpi").value ),
+							ACOG_1_50_360_pixel:1257.06 //这是ACOG测量后转换成腰射的鼠标行程
+						}
+						document.querySelector("#r6calibration").onclick=function()
+						{					
+							document.querySelector('#travel').value=travel*data[1].y
+							save()
+							r6drawchart()
+						}
+						function update(){
+							this.y=arg.ACOG_1_50_360_pixel / 0.02 / arg.r6ms1 / Math.min(Math.max(arg.r6ms2 *arg.XFactorAiming *this.OpticModifier, 0), 1)							
+							this.y= (this.y/arg.r6mdpi) / travel
 						}
 						function set(newy){
-							/*
-							var t=ans(nerdamer.solveEquations([
-								"1/y=dms*r6ms2*XFactorAiming",
-								"y="+newy,
-								"XFactorAiming="+arg.XFactorAiming
-							].concat(this.equations)   ))							
-							arg.r6ms2=Math.max(1,Math.min(100,Math.round(t.r6ms2)))
-							*/
-							arg.r6ms2=1.0/newy/this.dms/arg.XFactorAiming
+							newy=newy* travel *arg.r6mdpi
+							arg.r6ms2=arg.ACOG_1_50_360_pixel / 0.02 / arg.r6ms1 / (arg.XFactorAiming *this.OpticModifier)/newy
 							arg.r6ms2=Math.max(1,Math.min(100,Math.round(arg.r6ms2)))
 							upload(arg)
 						}
 						var data= [	
-								{x:0,y:0}
-								,{x: 1,y: 1,label:"腰射"}
-								,{x: 1/0.9 ,  update:function(){ this.y=1/Math.min(Math.max(0.6 *arg.r6ms2*arg.XFactorAiming,0),1)}		,set:set,dms:0.6,equations:["dms=0.6"],label:"机瞄/全息/红点/反射"}
-								,{x: 1/0.35,  update:function(){ this.y=1/Math.min(Math.max(0.35*arg.r6ms2*arg.XFactorAiming,0),1)}		,set:set,dms:0.35,equations:["dms=0.35"],label:"2.5倍镜"}
+								{x:0,y:0,label:"原点"}
+								,{label:"腰射",x: 1,OpticModifier:1,update:update,set:set}
+								//,update:function(){this.y=travel / arg.ACOG_1_50_360_pixel *0.02*arg.r6ms1*arg.r6mdpi      },set:function(newy){arg.r6ms1=newy / travel * arg.ACOG_1_50_360_pixel /0.02/arg.r6mdpi;upload(arg) }}
+								,{label:"机瞄/全息/红点/反射",x:1/0.90,OpticModifier:0.60,update:update,set:set}
+								,{label:"ACOG"               ,x:1/0.35,OpticModifier:0.35,update:update,set:set}
+								,{label:"OTs-03"             ,x:1/0.30,OpticModifier:0.30,update:update,set:set}								
 							]
 						data.push({update:infinitY.bind(null,data),label:"∞"})
 						data.forEach(function(e){
@@ -631,6 +654,8 @@
 					function claculateY(X,block)
 					{						
 						var res=[]
+						for (var i=0;i<10;i+=0.5)
+							res.push({y:i,label:""+i+"倍",strong:0.8})
 						chartInstance.data.datasets.forEach((dt,dti)=>{
 							if (dt._meta[0] && dt._meta[0].hidden) return 
 							dt.data.forEach((p1,p1i)=>{if(block.test(dti,p1i)) return							
@@ -680,7 +705,7 @@
 						//////////////////
 						//实现吸附功能						
 						var x=data[index].x
-						var nv=null
+						var nv={y:1}
 						function fun(t,value)
 						{
 							if (t.strong==undefined) t.strong=1
