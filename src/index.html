@@ -378,6 +378,39 @@
 					
 				</div>
 				
+				<div id=apex>
+					<p>APEX</p>
+					<button class="calibration">以此为基准</button><br>
+					<label>游戏配置文件目录</label>
+					<input id="apex_config"class="remember" style="width:100%"value="%USERPROFILE%\Saved Games\Respawn\Apex\local" />		
+					<br>
+					<table>
+						<tr>
+							<td>腰射</td>
+							<td>								
+								<input id="apex_mouse_sensitivity" class="remember" value=0.8461282675449064 onchange="r6drawchart()"> </input>
+							</td>
+						</tr>
+						<tr><td>1倍镜&机瞄</td><td><input id="apex_mouse_zoomed_sensitivity_scalar_0" class="remember" value=1.00 onchange="r6drawchart()"> </input></td></tr>
+						(注：少数枪械，例如平行步枪，机瞄灵敏度与1倍镜不同)
+						<tr><td>2倍镜</td><td><input id="apex_mouse_zoomed_sensitivity_scalar_1" class="remember" value=1.00 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>3倍镜</td><td><input id="apex_mouse_zoomed_sensitivity_scalar_2" class="remember" value=1.00 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>4倍镜</td><td><input id="apex_mouse_zoomed_sensitivity_scalar_3" class="remember" value=1.00 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>6倍镜</td><td><input id="apex_mouse_zoomed_sensitivity_scalar_4" class="remember" value=1.00 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>8倍镜</td><td><input id="apex_mouse_zoomed_sensitivity_scalar_5" class="remember" value=1.00 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>10倍镜</td><td><input id="apex_mouse_zoomed_sensitivity_scalar_6" class="remember" value=1.00 onchange="r6drawchart()"> </input></td></tr>
+						<tr>
+							<td>DPI</td>
+							<td>
+								<input id="apex_dpi" class="remember"  value="1600" onchange="r6drawchart()" />
+							</td>
+						</tr>
+						
+					</table>
+					<button id="apex_read">读取设置</button>
+					<button id="apex_write">写入设置</button>(重启生效)<br>					
+				</div>
+				
 				<script src="chart/Chart.min.js" > </script>
 				<style href="chart/Chart.min.css" > </style>	
 				<script src="d3.v5.min.js"></script>	
@@ -396,7 +429,9 @@
 					return undefined
 				}
 				var chartInstance				
+				var charthiddens=null
 				function r6drawchart(){//setTimeout(function(){		
+					this.datas=this.datas || []
 					var zoom=document.querySelector('#zoom').value
 					var travel=parseFloat(document.querySelector('#travel').value)
 					////////////////////////////////////////////////									
@@ -454,6 +489,41 @@
 										return res
 									}
 								}
+							}
+							,animation: {           // 这部分是数值显示的功能实现                
+								onComplete: function () {									
+									var chartInstance = this.chart,                     
+									ctx = chartInstance.ctx;                    // 以下属于canvas的属性（font、fillStyle、textAlign...）                    
+									ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);ctx.fillStyle = "black";                    
+									ctx.textAlign = 'center';                    
+									ctx.textBaseline = 'bottom';
+									var history=[]									
+									this.data.datasets.forEach(function (dataset, i) {                        
+										var meta = chartInstance.controller.getDatasetMeta(i);
+										//记录图标隐藏情况
+										charthiddens=charthiddens || {}
+										charthiddens[dataset.label]=meta.hidden
+										//绘制point label
+										if (meta.hidden) return 										
+										meta.data.forEach(function (bar, index) {                            
+											var data = dataset.data[index];  
+											if (!data.label) return
+											ctx.fillStyle=dataset.borderColor
+											var x=bar._model.x
+											var y=bar._model.y-10
+											var width=ctx.measureText(data.label).width
+											history.forEach(t=>{
+												if (Math.abs(t.x-x)>(t.who==i?10:0)+(t.width+width)/2) return												
+												y=Math.min(y,t.y-30)
+											})											
+											ctx.fillText(data.label,x,y-15); 
+											ctx.fillText("|",x,y); 
+											history.push({x,y,who:i,width:width})
+										});                    
+									});
+									charthiddens=charthiddens || {}
+									localStorage.setItem("charthiddens",JSON.stringify(charthiddens))
+								}            
 							}
 						}
 					};
@@ -580,7 +650,7 @@
 							e.update=e.update || function(){};e.set=e.set || function(){}
 							e.update()
 						})						
-						options.data.datasets.push({label: "BattleField V",data: data,showLine: true,borderColor: "#00ff00"})						
+						options.data.datasets.push({label: "BattleField V",data: data,showLine: true,borderColor: "#00cc00"})						
 					})();
 					//彩虹六号										
 					(function(){
@@ -622,6 +692,11 @@
 						})						
 						options.data.datasets.push({label: "Rainbow Six Siege",data: data,showLine: true,borderColor: "#3e95cd"})						
 					})();
+					//载入其他游戏//////////////////////////////					
+					r6drawchart.datas.forEach(data=>options.data.datasets.push(data()))
+					
+
+								
 					//////////////////////////////////////
 					if (chartInstance) chartInstance.destroy();
 					chartInstance = new Chart(document.getElementById('mschart').getContext('2d'), options);
@@ -725,11 +800,22 @@
 					}
 					
 					
-					
+					//载入隐藏情况
+					if (!charthiddens)
+					{
+						charthiddens=JSON.parse(localStorage.getItem("charthiddens") || "{}")
+						options.data.datasets.forEach((dataset,i)=>{
+							if (!charthiddens[dataset.label]) return
+							var meta = chartInstance.controller.getDatasetMeta(i);
+							meta.hidden=true
+						})
+					}
 				////////////////////////////////////////////////
 				}//},1)
+				r6drawchart.datas=r6drawchart.datas || []
 				setTimeout(r6drawchart,1000)
 				</script>
+				<script src="apex.js"> </script>
 			</section>
 			<!-- ===击杀提示=========================================================== -->
 			<section id="tabs-2" class="tab-panel">	
