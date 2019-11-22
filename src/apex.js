@@ -57,6 +57,7 @@
 		console.log(res)		
 		fs.writeFileSync(opt.path,res)
 	}	
+	
 	//绘制图表
 	r6drawchart.datas.push(function(){
 		var travel=parseFloat(document.querySelector('#travel').value)		

@@ -156,14 +156,14 @@
 						<tr>
 							<td>灵敏度</td>
 							<td>
-								<input id="r6ms1" class="remember" value="13" onchange="r6drawchart()"> </input>
-								<input id="r6ms2" class="remember" value="84" onchange="r6drawchart()"> </input>
+								<input id="r6ms1" class="remember" value="50" onchange="r6drawchart()"> </input>
+								<input id="r6ms2" class="remember" value="50" onchange="r6drawchart()"> </input>
 							</td>
 						</tr>
 						<tr>
 							<td>DPI</td>
 							<td>
-								<input id="r6mdpi" class="remember"  value="400" onchange="r6drawchart()" />
+								<input id="r6mdpi" class="remember"  value="1600" onchange="r6drawchart()" />
 							</td>
 						</tr>												
 					</table>
@@ -180,8 +180,8 @@
 						<tr>
 							<td>灵敏度</td>
 							<td>
-								<input id="eftms1" class="remember" value="0.17" onchange="r6drawchart()"> </input>
-								<input id="eftms2" class="remember" value="0.17" onchange="r6drawchart()"> </input>
+								<input id="eftms1" class="remember" value="1" onchange="r6drawchart()"> </input>
+								<input id="eftms2" class="remember" value="1" onchange="r6drawchart()"> </input>
 							</td>
 						</tr>
 						<tr>
@@ -191,7 +191,7 @@
 							</td>
 						</tr>
 					</table>
-					<input id="efttd" type="checkbox" class="remember" >抵消装备带来的转向惩罚</input><label id="efttdl"></label>
+					
 					<br>	
 					头盔:<select id="efthm" class="remember"></select><br>
 					弹挂:<select id="eftrg" class="remember"></select><br>
@@ -199,7 +199,7 @@
 					<img id="efthmE"/><img id="eftrgE"/><img id="eftveE"/><br>
 										
 					<button onclick="eftread()">读取设置</button>
-					<button onclick="eftwrite()">写入设置</button>(重启生效)<br>
+					<button onclick="eftwrite()">写入设置</button>(重启生效)<input id="efttd" type="checkbox" class="remember" >抵消装备带来的转向惩罚</input><label id="efttdl"></label>
 					<script src="eft/gears.js"> </script>
 					<script>										
 						helmat.forEach(t=>{
@@ -289,7 +289,7 @@
 						<tr>
 							<td>GstInput.MouseSensitivity</td>
 							<td>								
-								<input id="bf5ms" class="remember" value=0.00312370707489 onchange="r6drawchart()"> </input>
+								<input id="bf5ms" class="remember" value=0.015 onchange="r6drawchart()"> </input>
 							</td>
 						</tr>
 						<tr>
@@ -378,7 +378,7 @@
 					
 				</div>
 				
-				<div id=apex>
+				<div id=apex style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>APEX</p>
 					<button class="calibration">以此为基准</button><br>
 					<label>游戏配置文件目录</label>
@@ -388,7 +388,7 @@
 						<tr>
 							<td>腰射</td>
 							<td>								
-								<input id="apex_mouse_sensitivity" class="remember" value=0.8461282675449064 onchange="r6drawchart()"> </input>
+								<input id="apex_mouse_sensitivity" class="remember" value=1 onchange="r6drawchart()"> </input>
 							</td>
 						</tr>
 						<tr><td>1倍镜&机瞄</td><td><input id="apex_mouse_zoomed_sensitivity_scalar_0" class="remember" value=1.00 onchange="r6drawchart()"> </input></td></tr>
@@ -410,7 +410,34 @@
 					<button id="apex_read">读取设置</button>
 					<button id="apex_write">写入设置</button>(重启生效)<br>					
 				</div>
-				
+	
+
+				<div id=pubg style="   border: 1px solid #000;margin: 10px 0px;">
+					<p>PUBG</p>
+					<button class="calibration">以此为基准</button><br>
+					需打开独立设置瞄具灵敏度。注意，需要为瞄具灵敏度设置一个非50的初始值(否则配置文件里没有该条目)<br>
+					<label>游戏配置文件目录</label>
+					<input id="pubg_config"class="remember" style="width:100%"value="%LOCALAPPDATA%\TslGame\Saved\Config\WindowsNoEditor" />		
+					<br>
+					<table>
+						<tr><td>基准灵敏度</td><td><input id="pubg_normal" class="remember" value=0.1 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>机瞄&1倍镜</td><td><input id="pubg_scoping" class="remember" value=0.1 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>2倍镜</td><td><input id="pubg_scope2x" class="remember" value=0.1 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>3倍镜</td><td><input id="pubg_scope3x" class="remember" value=0.1 onchange="r6drawchart()"> </input></td></tr>
+						<tr><td>4倍镜</td><td><input id="pubg_scope4x" class="remember" value=0.1 onchange="r6drawchart()"> </input></td></tr>
+						<tr>
+							<td>DPI</td>
+							<td>
+								<input id="pubg_dpi" class="remember"  value="1600" onchange="r6drawchart()" />
+							</td>
+						</tr>
+						
+					</table>
+					
+					<button class="read">读取设置</button>
+					<button class="write">写入设置</button>(重启生效或手工输入)<br>										
+				</div>
+			
 				<script src="chart/Chart.min.js" > </script>
 				<style href="chart/Chart.min.css" > </style>	
 				<script src="d3.v5.min.js"></script>	
@@ -446,8 +473,8 @@
 							responsive: true,
 							maintainAspectRatio: true,
 							scales: {
-								xAxes: [{ scaleLabel: {display: true,labelString: '实际放大倍率(16:9,60HFOV)'},ticks: {beginAtZero: true,max: Math.max(1,zoom)},type: 'linear',position: 'bottom'}],
-								yAxes: [{ scaleLabel: {display: true,labelString: '灵敏度减缓倍率'},ticks: {beginAtZero: true,max: Math.max(1,zoom),min: 0}}]
+								xAxes: [{ scaleLabel: {display: true,fontSize:20,labelString: '实际放大倍率(60HFOV,16:9)'},ticks: {beginAtZero: true,max: Math.max(1,zoom),callback: function(value, index, values) {return value+"倍";}},type: 'linear',position: 'bottom'}],
+								yAxes: [{ scaleLabel: {display: true,fontSize:20,labelString: '      '},ticks: {beginAtZero: true,max: Math.max(1,zoom),min: 0,callback: function(value, index, values) {return value+"倍";}}}]
 								
 							},
 							elements: {line: {tension: 0}}
@@ -494,7 +521,8 @@
 								onComplete: function () {									
 									var chartInstance = this.chart,                     
 									ctx = chartInstance.ctx;                    // 以下属于canvas的属性（font、fillStyle、textAlign...）                    
-									ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);ctx.fillStyle = "black";                    
+									ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
+									ctx.fillStyle = "black";                    
 									ctx.textAlign = 'center';                    
 									ctx.textBaseline = 'bottom';
 									var history=[]									
@@ -509,20 +537,44 @@
 											var data = dataset.data[index];  
 											if (!data.label) return
 											ctx.fillStyle=dataset.borderColor
+											var hw=ctx.canvas.height/200
 											var x=bar._model.x
-											var y=bar._model.y-10
+											var y=bar._model.y-hw
+											
 											var width=ctx.measureText(data.label).width
 											history.forEach(t=>{
 												if (Math.abs(t.x-x)>(t.who==i?10:0)+(t.width+width)/2) return												
-												y=Math.min(y,t.y-30)
+												y=Math.min(y,t.y-25)
 											})											
-											ctx.fillText(data.label,x,y-15); 
+											ctx.fillText(data.label,x,y-10); 
 											ctx.fillText("|",x,y); 
 											history.push({x,y,who:i,width:width})
 										});                    
 									});
 									charthiddens=charthiddens || {}
 									localStorage.setItem("charthiddens",JSON.stringify(charthiddens))
+									//创建虚假Y轴标题								
+									var title='灵敏度减缓倍率'
+									
+									var chartInstance = this.chart,                     
+									ctx = chartInstance.ctx;   
+									ctx.fillStyle="black"
+									ctx.font = Chart.helpers.fontString(22, Chart.defaults.global.defaultFontStyle, "'SimSun','Helvetica Neue', 'Helvetica', 'Arial', sans-serif");
+									ctx.textAlign = 'left';
+									
+									t=ctx.measureText(title)
+									
+									ch=t.actualBoundingBoxAscent-t.actualBoundingBoxDescent+5
+									console.log(ch)
+									y=ctx.canvas.height/2-(title.length/2)*ch
+									for (var i=0;i<title.length;++i)
+									{
+										t=title[i]
+										ctx.fillText(t,0,y); 
+										console.log(y)
+										y+=ch
+									}
+									
 								}            
 							}
 						}
@@ -583,6 +635,7 @@
 								,{x: 1.0*96/68,mtd:44300,x_named:1,ms:"eftms2",label:"机瞄",update:update,set:set}
 								,{x: 1.0*96/68,mtd:48000,x_named:1,ms:"eftms2",label:"全息",update:update,set:set}
 								,{x: 1.0*205/68,mtd:57600,x_named:2,ms:"eftms2",label:"Monstr. 2",update:update,set:set}
+								,{x: 1.0*315/69,mtd:72000,x_named:2,ms:"eftms2",label:"Prism 2.5x",update:update,set:set}
 								,{x: 1.0*397/79,mtd:96000,x_named:3.5,ms:"eftms2",label:"PU 3.5x",update:update,set:set}
 								,{x: 1.0*455/68,mtd:144000,x_named:4,ms:"eftms2",label:"x4(HAMR,DR1/4xFDE,PSO 1 4x24",update:update,set:set}
 							]
@@ -732,7 +785,8 @@
 						for (var i=0;i<10;i+=0.5)
 							res.push({y:i,label:""+i+"倍",strong:0.8})
 						chartInstance.data.datasets.forEach((dt,dti)=>{
-							if (dt._meta[0] && dt._meta[0].hidden) return 
+							var meta = chartInstance.controller.getDatasetMeta(dti);
+							if (meta.hidden) return							
 							dt.data.forEach((p1,p1i)=>{if(block.test(dti,p1i)) return							
 								//计算相近点
 								if (p1.label)
@@ -801,7 +855,7 @@
 					
 					
 					//载入隐藏情况
-					if (!charthiddens)
+					//if (!charthiddens)
 					{
 						charthiddens=JSON.parse(localStorage.getItem("charthiddens") || "{}")
 						options.data.datasets.forEach((dataset,i)=>{
@@ -816,6 +870,7 @@
 				setTimeout(r6drawchart,1000)
 				</script>
 				<script src="apex.js"> </script>
+				<script src="pubg.js"> </script>
 			</section>
 			<!-- ===击杀提示=========================================================== -->
 			<section id="tabs-2" class="tab-panel">	
@@ -824,12 +879,13 @@
 				<label>Nvidia Highlight目录</label>
 				<input  class="remember"  id="nh" style="width:100%"value="Z:\Highlights\Escape From Tarkov" />
 				击杀记录：
-				<div  id="killConfirmList"  ></div>
+				<div  id="killConfirmList"  >
 				简易教程:<br>
 				<img src="image/1.png" width="50%"></img><br>
 				<img src="image/2.png" width="50%"></img><br>
 				上边图中是N卡精彩时刻的总文件夹，我们需要选中存放塔科夫的文件夹，名称一般是“Escape From Tarkov”<br>
 				因此在这里我的路径为“Z:\Highlights\Escape From Tarkov”<br>
+				</div>
 				<script>
 					var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");		
 					const fs=require("fs")
