@@ -1,0 +1,430 @@
+<html>
+	<head>
+	<meta charset="utf-8">
+	<style>
+		.tabset > input[type="radio"] {
+		  position: absolute;
+		  left: -200vw;
+		}
+
+		.tabset .tab-panel {
+		  display: none;
+		}
+
+		.tabset > input:first-child:checked ~ .tab-panels > .tab-panel:first-child,
+		.tabset > input:nth-child(3):checked ~ .tab-panels > .tab-panel:nth-child(2),
+		.tabset > input:nth-child(5):checked ~ .tab-panels > .tab-panel:nth-child(3),
+		.tabset > input:nth-child(7):checked ~ .tab-panels > .tab-panel:nth-child(4),
+		.tabset > input:nth-child(9):checked ~ .tab-panels > .tab-panel:nth-child(5),
+		.tabset > input:nth-child(11):checked ~ .tab-panels > .tab-panel:nth-child(6),
+		.tabset > input:nth-child(13):checked ~ .tab-panels > .tab-panel:nth-child(7),
+		.tabset > input:nth-child(15):checked ~ .tab-panels > .tab-panel:nth-child(8),
+		.tabset > input:nth-child(17):checked ~ .tab-panels > .tab-panel:nth-child(9){
+		  display: block;
+		}
+
+		/*
+		 Styling
+		*/
+		body {
+		  font: 16px/1.5em "Overpass", "Open Sans", Helvetica, sans-serif;
+		  color: #333;
+		  font-weight: 300;
+		}
+
+		.tabset > label {
+		  position: relative;
+		  display: inline-block;
+		  padding: 10px 10px 15px;
+		  border: 1px solid transparent;
+		  border-bottom: 0;
+		  cursor: pointer;
+		  font-weight: 600;
+		}
+
+		.tabset > label::after {
+		  content: "";
+		  position: absolute;
+		  left: 15px;
+		  bottom: 10px;
+		  width: 22px;
+		  height: 4px;
+		  background: #8d8d8d;
+		}
+
+		.tabset > label:hover,
+		.tabset > input:focus + label {
+		  color: #06c;
+		}
+
+		.tabset > label:hover::after,
+		.tabset > input:focus + label::after,
+		.tabset > input:checked + label::after {
+		  background: #06c;
+		}
+
+		.tabset > input:checked + label {
+		  border-color: #ccc;
+		  border-bottom: 1px solid #fff;
+		  margin-bottom: -1px;
+		}
+
+		.tab-panel {
+		  padding: 20px 10px;
+		  border-top: 1px solid #ccc;
+		}
+
+	</style>
+		<script>
+			function remember()
+			{
+				document.querySelectorAll(".remember").forEach(function(e){
+					if (!e.inited)
+					{
+						e.addEventListener('input', save)
+						load([e])
+					}
+					e.inited=true
+				})			
+			}		
+			function save()
+			{
+				document.querySelectorAll(".remember").forEach(function(e){				
+					if (e.type=="checkbox")
+						localStorage.setItem(e.id,e.checked)
+					else if (e.type=="radio")
+						localStorage.setItem(e.id,e.checked)
+					else if (e.type=="select-one")
+						localStorage.setItem(e.id,e.selectedIndex)
+					else
+						localStorage.setItem(e.id,e.value)
+				})			
+			}
+			function load(e)
+			{
+				if (e==null)
+					e=document.querySelectorAll(".remember")			
+				e.forEach(function(e){				
+					if (!(e.id in localStorage) || localStorage.getItem(e.id)=="") return
+					if (e.type=="checkbox" )
+						e.checked=localStorage.getItem(e.id)=="true"	
+					else if (e.type=="radio" )
+						e.checked=localStorage.getItem(e.id)=="true"					
+					else if (e.type=="select-one")
+						e.selectedIndex=parseInt(localStorage.getItem(e.id))
+					else
+						e.value=localStorage.getItem(e.id)
+				})			
+			}
+		</script>
+	</head>
+	<body>
+		<table>
+		<td>
+		<table id="list"></table>
+		</td>
+		<td>
+		<div class="tabset">			
+			<input type="radio" name="tabset" id="tab1" aria-controls="tabs-1" class="remember" checked><label for="tab1">Prapor</label>
+			<input type="radio" name="tabset" id="tab2" aria-controls="tabs-2" class="remember" checked><label for="tab2">Therapist</label>
+			<input type="radio" name="tabset" id="tab3" aria-controls="tabs-3" class="remember" checked><label for="tab3">Fence</label>
+			<input type="radio" name="tabset" id="tab4" aria-controls="tabs-4" class="remember" checked><label for="tab4">Skier</label>
+			<input type="radio" name="tabset" id="tab5" aria-controls="tabs-5" class="remember" checked><label for="tab5">Peacekeeper</label>
+			<input type="radio" name="tabset" id="tab6" aria-controls="tabs-6" class="remember" checked><label for="tab6">Mechanic</label>
+			<input type="radio" name="tabset" id="tab7" aria-controls="tabs-7" class="remember" checked><label for="tab7">Ragman</label>
+			<input type="radio" name="tabset" id="tab8" aria-controls="tabs-8" class="remember" checked><label for="tab8">Jaeger</label>						
+			<div id="quest" class="tab-panels"></div>
+		</div>
+		</td>
+		</table>
+		<input id="ignoreengough" type="checkbox" class="remember" onclick="calc()" checked>隐藏数量足够的物品</input><br>
+		已知问题：<br>
+		1.少数任务相关物品(Corrugated hoses,Phase control relays,Gas analyzers,Military COFDM wireless Signal Transmitters)数量可能比实际要少<br>
+		2.人力有限可能会有bug，仅供参考<br>
+		3.图片来自于官方wiki(https://escapefromtarkov.gamepedia.com/)，可能因网络问题无法加载<br>
+		有问题请联系wywzxxz,联系方式:逃离塔科夫贴吧3群(859030316) 群ID：wywzxxz (非官方人员，普通水友。若不在即弃坑，请打扰)<br>
+		<div id="msg" />
+	<script>
+	remember()
+	load()
+	var json={"Air Filtering Unit":[{}],"Bitcoin Farm":[{"CPU Fan":10,"Power supply unit":5,"Powercord":5,"Electric drill":1},{"CPU Fan":15,"Power supply unit":5,"Printed circuit board":5,"Phase control relay":2},{"CPU Fan":25,"Silicone tubes":10,"Electric motor":1,"Pressure gauges":2}],"Booze Generator":[{"Silicone tubes":4,"Analog thermometers":2,"Pressure gauges":2,"Corrugated hose":5}],"Generator":[{},{"Phase control relays":5,"Electric motor":1,"Wires":15},{"Phase control relays":6,"Electric motor":2,"Spark plug":5,"Power supply unit":5}],"Heating":[{},{},{"Radiator helix":8,"Wires":8}],"Illumination":[{},{"Light bulb":14,"Wires":5},{"Capacitors":7}],"Intelligence Center":[{"Folder with intelligence":1},{"Folder with intelligence":3,"Secure Flash drive":3,"Powercord":4,"Damaged hard drive":4},{"Military COFDM wireless Signal Transmitters":2,"VPX Flash Storage Modules":2,"Gas analyzers":3,"Military cable":4}],"Lavatory":[{},{"Corrugated hoses":3,"Screws":5,"Electric drill":1},{"Corrugated hoses":6,"Pressure gauges":2,"A set of tools":1,"Xenomorph sealing foam":3}],"Library":[{}],"Medstation":[{},{"Medical bloodset":1,"Saline solution":3},{"Saline solution":5,"LEDX Skin Transilluminator":1}],"Nutrition Unit":[{"Phase control relay":2},{"Wrench":4,"Corrugated hose":2,"Heat-exchange alkali surface washer":2,"Phase control relay":1},{"Coffee Majaica":3,"Sodium bicarbonate":3}],"Rest Space":[{},{},{"Powercord":4,"Capacitors":5,"Wires":7}],"Scav case":[{"Bronze lion":2,"Gold skull ring":2,"Golden neck chain":6,"Roler submariner gold wrist watch":3}],"Security":[{},{},{"Working LCD":2,"Wires":4,"NIXXOR lens":8,"SSD drive":1}],"Shooting range":[{"A pack of nails":4,"Screw nut":5,"Bolts":5,"Duct tape":3}],"Solar power":[{}],"Stash":[{},{"Handdrill":1,"A pack of screws":7,"WD-40 100ml.":4},{"Electric drill":2,"A pack of screws":8},{}],"Vents":[{},{"Electric motor":1,"Car battery":1},{"Electric motor":2,"Wires":8,"Printed circuit board":3,"Car battery":3}],"Water collector":[{"Corrugated hose":4,"Bolts":5,"Screw nut":5,"Duct tape":3},{"Corrugated hose":6,"Electric motor":2,"A set of tools":2},{"Pliers Elite":2,"Shustrilo sealing foam":5}],"Workbench":[{"Screw nuts":2,"Bolts":2,"Leatherman Multitool":1},{"A set of tools":3,"Electric drill":2,"Bolts":6},{"Roubles":195,"Pliers Elite":2,"FireKlean gun lube":1}]}
+
+	var icons={
+	//https://escapefromtarkov.gamepedia.com/Barter_trades
+	"T-Shaped Plug":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/4f/T-Shaped_Plug_Icon.png?version=79bd8f9e3cbe80098b536045b715f024","Prapor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f1/Prapor_4_icon.png?version=381439423969ec7461f466cd1d4bcd76","Submachinegun 19-01 Vityaz-SN 9x19":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/94/PP-19-01_Zenit.png?version=11df29d4a0293946f5f5609e7f9e479c","Clin wiper":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2b/Clin_Wiper_icon.png?version=0a737840c83467cebd0645a13e10b5b4","30 pcs. 5.45x39 BP gs ammo pack":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/04/545BPAmmoPack30RoundsIcon.png?version=2464e3738042aa56fa11ddc4cb9eea00","Can of delicious beef stew":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/ad/Can_of_beef_stew_alt_Icon.png?version=1681d9d6251ce2948eacf208286a5cdb","30 pcs. 5.45x39 BT gs ammo pack":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/ce/545BTAmmoPack30RoundsIcon.png?version=b32a1f5cf340d4a0a23aade932c617f6","Spark plug":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/46/Spark_Plug_Icon_.png?version=5d679b96f39a59d595f8bf4763197f7b","Zenit-Belomo PSO 1M2-1 4x24 scope":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/fe/Psoicon.png?version=5e15e36fd2325cae79f9c44bde003154","Horse figurine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/27/Horse_figurine_Icon.png?version=6689e1b6f3c4e8719d8b6f8fdb6b0e08","Kalashnikov AKS-74U 5.45x39":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/89/AKS-74U_icon.png?version=5873ccfd0a3b65abab1026f1d31bc884","Bolts":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/70/Boltsicon.png?version=27b3299e61a7e75e8c572387b6760d3a","Screw nut":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/cd/Screwnuticon.png?version=97698ddbbcaa52348ce8209a2241ec21","PM 9x18PM pistol":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/38/PM_icon.png?version=7557f99c51d7d786351fcd6ed66dadec","A pack of screws":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8f/Screwsicon.png?version=d67ff4701814b6b90809ea1f8752b3f4","Stechkin Automatic Pistol 9x18PM":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/0d/APSTrade.png?version=32e23413da3a98620aa06049a65f947b","D Size Battery":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e5/D_Size_Battery_Icon.png?version=799c5e5d40993f5cc991db6bb7765059","AA Battery":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/9c/AA_Battery_Icon_2.png?version=afc952b8c21ba69ff68d438f3f7e5766","Mosin bolt-action sniper rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/6b/MosinObrezM.png?version=3c0f0104f2f3c2286bfa572ce4625bfd","Can of beef stew":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a7/Can_of_beef_stew_Icon.png?version=b47a0b0e3b1f0f82ebae55e3576490e5","AKM 7.62x39 assault rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/d/db/AKM_T-OPS.png/300px-AKM_T-OPS.png?version=cf58fada76bef68b4aed1c908df3125c","Dry fuel":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/fd/Dryfuelicon.png?version=b268b21acd92252928d4f340def1db89","Hot Rod":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e6/Hor_Rod_icon.png?version=9c864edc8e2c543c8455a5f5d61b17c9","30 pcs. 5.45x39 BS gs ammo pack":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/69/545BSAmmoPack30RoundsIcon.png?version=de0a7e3c93689f3240b1109742d1f69d","Energy-saving lamp":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/66/Energy-Saving_Lamp_Icon.png?version=bf67fa17c89923076958789ae5b1f795","RGD-5 hand grenade":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b1/RGD-5_grenade_icon.png?version=19f11b95db6c2a64df5a6042f7309880","Wrench":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a4/Wrench_Icon.png?version=db3d963c98cfdd39d7d196e06fd4619d","6L18 45-round 5.45x39 magazine for AK-74 and compatible weapons":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/63/45orangeakmagicon.png?version=248aa60b4c0cdb904358b3b3e5bd45f4","Round pliers":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/dd/RoundPliersIcon.png?version=67e3e9540a72728635645cd8ee84c259","Standard 9x18PM 30-round magazine for PP-91":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/6b/Kedr30rnd.png?version=004c5613701788adefae670dbd945dda","Damaged hard drive":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/44/Damaged_Hard_Drive_Icon.png?version=56e5d8172612f0509c213fe3db35e3f6","60-round 6L31 5.45x39 magazine for AK-74 and compatibles":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d7/6L31-60-mag_icon.png?version=b79265a960de88e82a59457b1cda9e5b","Pompon hat":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b5/Pompon_hat_icon.png?version=10dabffe776db5caf69ec280f3f77be8","MPL-50 entrenching tool":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c1/MLP50icon.png?version=818ffa40fb5b07cc01940b030e867708","PC CPU":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/9e/PC_CPU_Icon.png?version=891faa82d6182fb0029926cfd3540cf4","Yarygin MP-443 Grach 9x19 pistol":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/92/Yarygin_MP-443_Grach_icon.png?version=60503bf6bd9e49697069f38238b1d726","Air filter for gas mask":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/fd/Airfiltericon.png?version=e23e24c398efad9e0373c1c36a399d2e","Special Sniper Rifle VSS Vintorez":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/3/39/VSS_icon.png/300px-VSS_icon.png?version=292477bed9838efa716437f625fb46e8","Cat figurine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/36/Caticon.png?version=528dda664fc9936bfe0dbfe92b163304","Kalashnikov AKS-74UB 5.45x39":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/f/f3/AKS-74UBTrade.png/300px-AKS-74UBTrade.png?version=566e63600cc65ac46709be98cf1272f8","Malboro Cigarettes":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/44/Malboro_Cigarettes_Icon.png?version=c43e254dfae817bc5bae5870c8bb3da9","Apollon Soyuz cigarettes":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/cc/Apollon_Soyuz_cigarettes_Icon.png?version=ba75dba1f3955b9a8aacadfe2c5c12c2","SV-98 bolt-action sniper rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/b/b0/SV-98_icon.PNG/300px-SV-98_icon.PNG?version=3ae82129cbe46ee17f5c6c358361c4a9","AK-74N":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/0/0e/AK-74N.png/300px-AK-74N.png?version=b7707b5a39832a3c629251261047e231","Insulating tape":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e4/Insulating_tape_Icon.png?version=09ee381db8422b524d665c8c665d2361","8 pcs pack of 9x39 7N9 SPP ammo":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/81/8_pcs_pack_9x39_7N9_SPP_ammo_icon.png?version=ed3f6dd72fcb3b6ddd2902a9c1eb2273","F-1 Hand grenade":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/aa/F-1_grenade_icon.png?version=ad83b518e3d0f05fcc56b046bd186df5","Pliers":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8f/Plier_Icon.png?version=68fc65cc96085ebae14d23c353b6da64","30-round SR3M.130 9x39 SR3M magazine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/46/Vssval30roundericon.png?version=d7bca58374fe26da79434e470d986266","Water bottle with a filter Aquamari":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/bd/Aquamari_icon.png?version=fa620dd67f854ea97e59242f2073a338","6h5 Bayonet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/7e/6h5bayoneticon.png?version=fd5a196b22a7fdc93a4c14c5fd254c18","Gunpowder \"Hawk\"":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/df/GunpowderHawkIcon.png?version=0c42c8add1d9857eda1a2ee922ca19b1","9x21 Serdyukov automatic pistol SR1MP Gyurza":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/dd/SH-1MP_icon.png?version=ca03fc5b9e91e4e1186997a9cbc91399","Geiger-Muller counter":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/86/Geiger-Mueller_counter_Icon.png?version=0e88663dbbc9cfb49156800030db11dc","MRE":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a4/MRE_icon.png?version=855b22bebf8cc0bc94de8d63319823bd","AS VAL":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/6/6f/AS_VAL_icon.png/300px-AS_VAL_icon.png?version=9df9a0b560896690868e2ef127b7158c","Gunpowder \"Kite\"":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/43/Gunpowder_Icon.png?version=68d2639dfc4e9a00c61eb3b4cd5fda70","7.62x51 mm M61":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e3/M61ICON.png?version=8507afbbdd2d637ff6c56ba07bbb5869","RPK-16 5.45x39 light machine gun":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/c/c7/RPKTradeNoMag.png/300px-RPKTradeNoMag.png?version=96988f3365a715f63070b923c8cd906f","Long flat screwdriver":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/51/Long_screwdriver_icon.png?version=7aea66064757b97e7b150d43dac1357e","Metal cutting scissors":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/6d/Metal_cutting_scissors_icon.png?version=0f2d4c032db841cfefc6285246dd3f73","Bottle of vodka Tarkovskaya":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/75/VodkaIcon.png?version=1f57dcd0504011662b37cf861fad4dca","ASh-12 12.7x55 assault rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/ac/ASH-12_Icon.PNG?version=4d5ac94ec6d54729a9d265b57bd73837","Strike Cigarettes":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/46/Cigred.png?version=6e0d0e42eac0e4eb7c3fc0b9d5729bcf","8 pcs pack of 9x39 7N12 BP ammo":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2f/9x39BPammoPackIcon.png?version=a21ce898fd8bb0d045efb56f5b876392","Gunpowder \"Eagle\"":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/e/e5/Gunpowder_eagle_icon.png/64px-Gunpowder_eagle_icon.png?version=fccfc787e7f61ec1218ef6c995aa07be","95-round 5.45x39 magazine for RPK-16 and compatibles":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/03/95-round_5.45x39_magazine_for_RPK-16_icon.png?version=a7d30a26d02574930404a0f9469996b4","Military circuit board":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c5/MilitaryCircuitBoardIcon.png?version=f66cd6eac986905aa88d5ba61e091786","Paid AntiRoach":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/10/Paidicon.png?version=3772a7d223177abaf96de07ac8946da3","Therapist":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/af/Therapist_4_icon.png?version=8c6bc9b35a2ef885d4b14f5234c5ac77","Salewa FIRST AID KIT":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/77/EFT_Salewa-First-Aid-Kit_Icon_2.png?version=9d93631cdd651f147d2b843705679e62","Vita juice":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2b/Vita_Juice_icon.png?version=04fa3d59bc6c870fdf2e386724744b05","Slickers bar":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/93/Slickers_bar_icon.png?version=a0901737896c15cb241be466b8c9e642","Matches":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b1/Matches_Icon.png?version=8f1b948c0ee7b65435e7dccc9d40fbf9","Crickent lighter":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8b/Cricket_lighter_Icon.png?version=f0fac14f6a5642e16bd5e00bd2e70042","Can of pacific saury":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/7c/Saury_icon.png?version=96390c0826a861549eb4b90d0b1fa26c","Iskra lunch box":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8f/Lunchbox_icon.png?version=5f4b010aa39d93efa4b28819b0673a7f","Analgin painkillers":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e0/EFT_Painkillers_Icon.png?version=e9f17e7413d2b1fc975ef0cdd3240320","Duct tape":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/38/Duct_tape_Icon.png?version=638332bc00b1bf3a1bf2bede5fae78cc","Car first aid kit":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b9/EFT_Car-first-aid-kit_Icon.png?version=b5e830b2d8227785b80d12003fb84f63","null":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2b/Purified_water_icon.png?version=3ff87b44b956ed2751fc77db7613bb91","Immobilizing splint (alu)":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/81/AluSplintIcon.png?version=a7ea29939692d538c662c2cb29f4fef8","Rye croutons":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/67/Rye_Croutons.png?version=ccce2767eaf3d244ab6a911595c68af2","Emelya rye croutons":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c1/Emeyla_Croutons.png?version=84cbeccf7be207233055bcea8cc95275","Golden neck chain":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/9a/Golden_neck_chain_Icon.png?version=8c998956b60f42fc7045638211ea1cbc","Customs office key":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f9/Customs-office-key-Icon.png?version=830e257b6fdba032982edd150b297a7a","Bronze lion":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c2/Bronze_Lion_Icon.png?version=1db1bbf5c80b930301f1303ca3c83bef","Documents case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/eb/Document-Case.png?version=926c0ab2e7a9c0187ef4aac981045755","Toothpaste":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d0/Toothpasteicon.png?version=587f41543e91f8882aa997fe6d9dac21","Toilet paper":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/ea/Toilet_paper_icon.png?version=c8cb6d35f7363a1ec61af1abd5aa3bd6","Grizzly First Aid Kit":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/92/EFT_Grizzly_Icon.png?version=bf7e3d590faeb325f26d07ead52cd9b2","Pack of sugar":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a8/Sugar_icon.png?version=a4576221c9ed0659ae765af1a59fa9d3","Sodium bicarbonate":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/84/Sodium_Bicarbonate_icon.png?version=72e599261ac44aff8a588690a32de5e7","IFAK personal tactical first aid kit":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/20/EFT_IFAK_Icon.png?version=8294a673cffe4157adbf8ff5e2b991af","Pile of meds":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b6/Pile_of_meds_icon.png?version=9a65fff92b7ec282d12d48b9a91e8164","Pistol case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/22/Pistol-Case.png?version=a792efd434107270d1ee24d47d236f7c","Disposable syringe":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/37/DisposableSyringeIcon.png?version=1ef0c7bbba2627cb9c4ea609633f3fdd","Ultraviolet lamp":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/1e/UV_lamp_Icon.png?version=7f5e4c16bce693be8633b67ca24616d1","Combat stimulant injector SJ1 TGLabs":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/ab/Combat_stimulant_SJ1_icon.png?version=821da09f9c19170ed6dc064fc078bc7d","Medical bloodset":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/56/Medical_Bloodset_Icon.png?version=ac89775bb1d6ad64a4aa613c2ccd16ef","Vaseline":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/43/EFT_Vaseline_Icon.png?version=bb195ce49fb615399c0f5317f0759864","Meds case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/ca/Medscaseicon.png?version=689c7a225aff4f40c9fb5d727fc9604b","Purified water":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2b/Purified_water_icon.png?version=3ff87b44b956ed2751fc77db7613bb91","Water filter":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/b/bc/Water_filter_icon.png/64px-Water_filter_icon.png?version=e1fc6851750a6a24aa99533387b20fe4","RB-AK key":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/73/Rb-ak_item.png?version=8ec8224672ba661a41e710f78f3a6f11","Hydrogen peroxide":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/13/Hydrogen_Peroxide_icon.png?version=c6de10803f4c9ee61df2d410438da20e","Saline solution":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/1b/Saline_Solution_icon.png?version=bfe1217bed38b994d1c9ef9e59d3ffe8","Keytool":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/49/Keybar_icon.png?version=e353c7da4e6a203de2e63a3eb9cdda75","Ophthalmoscope":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f6/Ophthalmoscopeicon.png?version=babd77052efaac857a77f8f78e9224aa","Items case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/43/Items_case_icon.png?version=3c7ca641c8f8583aff38e42d51ae1fa4","Condensed milk":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c0/Condmilkicon.png?version=32559a953d5deb9de279cdacaf1712c3","Key to KIBA store outlet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/ec/KibaKeyIcon.png?version=547c776af23d7b2c1e949cf3aa636a1e","Roler submariner gold wrist watch":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e7/Roler_icon.png?version=3c5ff721928e60443cc4c8bc63f5f7bc","Money case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b7/Money_case_icon.png?version=f6f3f6631a3c3af2630a772022a81807","Portable defibrillator":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/81/Defibrillatoricon.png?version=54328ad55c069888327e5c5845d52721","LEDX Skin Transilluminator":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/4e/TransilluminatorIcon.png?version=b944a5fa8ba1e7ee655cbebf7e83fb11","Ibuprofen painkillers":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8a/Ibuprofen_painkiller_icon.png?version=872728810810eeee384b234842aec627","T H I C C Items case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/8/82/THICCItemsCaseTrade.png/300px-THICCItemsCaseTrade.png?version=cd887acc26d33194d072fc6ca71c0e51","\"Fierce Hatchling\" moonshine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/ad/Fiece_hatchling_moonshine_icon.png?version=a1f3c46e3b3851e237cb7409b01b0120","Bottle of Dan Jackiel Whiskey":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/cb/Whiskey_icon.png?version=bf7d787900e350d6defe497521bdffef","Combat stimulant injector SJ6 TGLabs":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/9c/Combat_stimulant_SJ6_icon.png?version=b5b6f45767868752fac47eb4c6482d03","Skier":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e8/Skier_4_icon.png?version=b17bf04b5942ae040e80d8084219504b","Vepr KM / VPO-136 7.62x39 carbine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/1/19/VPO_136_icon.png/300px-VPO_136_icon.png?version=3cef37c302bbc6acdc92d61b386e0e4b","Rechargeable battery":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/28/Recicon.png?version=e01491423da1f4dea0d94f2b31f6e0c0","ADAR 2-15 .223 Carbine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/5/51/ADAR_icon.png/300px-ADAR_icon.png?version=a39ff47e49a6cde44b8b5ce902bf7c7b","Rotor 43 9x19 muzzle brake":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/79/Icon_Rotor43_9.19.png?version=930b7617d58b77485d7cb789d8f03af1","5 pcs. 12x70 DIPP ammo box":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a2/DippAmmoboxicon.png?version=64c04ae471cc7b88330178d8eec95f35","Dogtag":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/ec/Dogtags.png?version=72039cc462d7a2533506213125b595f6","Eotech 553 holographic sight":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c8/553icon.png?version=1d8ffbf59a9e9abb2563d9fac4050810","Hensoldt FF 4-16x56 scope":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/ad/Ff3-12icon.png?version=d0e93ba8ad759de8b2b8e918f634cdc3","Wooden clock":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2d/Wooden_clock_icon.png?version=a30c4f75855c4fc63eb5d937c53758e2","Trijicon REAP-IR thermal riflescope":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/1d/Thermalicon.png?version=a917ed8824fdeb331f978723aaf62185","DVL-10 Saboteur sniper rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/0/06/DVL-10_Urbana.png/300px-DVL-10_Urbana.png?version=e7df7271373a327796733bfcdb6a28f9","Chainlet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/9d/Chainlet_icon.png?version=7a918041a7c3358d7be3864801f787c6","20 pcs. 9x19 mm DIPP ammo box":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/df/DippAmmobox20icon.png?version=853bfe3d4b78f9debe2e96a2b18b3604","Military COFDM wireless Signal Transmitter":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/3a/COFDM_Icon.png?version=0fd8bd34a48244fc132f409c4d807103","Military base checkpoint key":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/95/Checkpoint_Key_icon.png?version=e3e5c9069dd78114cff103b55ddb30c7","Chain with Prokill medallion":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/ea/Prokill_medallion_Icon.png?version=155e3e0de0fbc4e4358ac64a4b974c37","M-2 Tactical Sword":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/ce/M2swordtradeicon.png?version=56e251dfbac21eddfe061fdca1c6f1ac","TGP-A 5.45x39 muzzle device/suppressor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/94/Tgp-aicon.png?version=5558439273f90f44bc8291c78b8a1b73","Phased array element":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/81/Phased-Array-Element-icon.png?version=482335c9d23f5362ea581b54afc9039c","Weapon case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/0/0f/Weapon_case_icon.png/300px-Weapon_case_icon.png?version=4315695720374fd4cbbeb3ae73b3bade","Bars A-2607- 95x18":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8c/A-2607_Bars.png?version=9b273342d0f3ae49ea3a540d53b64021","Peacekeeper":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/3e/Peacekeeper_4_icon.png?version=fd6962fa8464245d4f533dc150c104f2","HK MP5 9x19 submachinegun (Navy 3 Round Burst)":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f8/MP5_icon.png?version=ef8e5c9abd05f5dab56d144b908e2389","Zibbo lighter":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/6e/Zibbo_lighter_Icon.png?version=cb5f59de0d059d3ee014d38814fafd3a","M67 Hand grenade":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/01/M67icon.png?version=274f3a5eef84627f1615a4c9615e791c","Bars A-2607- Damascus":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a0/Damascusknifeicon.png?version=428bc12999a5864c0982489b9fe23595","P226R 9x19 pistol":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8a/P226R_icon.png?version=94e727b214c694a77c9216734eb6f1c3","Flyye MBSS Backpack":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e4/Flyye_MBSS_Backpack.png?version=40c32a83943f16c9fb12d4ab52aadf7d","Wilston cigarettes":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/af/Wilstonicon.png?version=de4e82b634ceb9aa06d1b2b915bef5d3","Wooden CAF WASR 10-63 handguard":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/27/DingDongGripIcon.png?version=f659cd9517a1df895208c700b6471d33","SIG MPX 9x19 Submachine gun":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/da/MPX_MQB.png?version=e37ecd953af409d7bfdfc314721d9d6a","CPU Fan":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a8/CPU_Fan_Icon.png?version=34e6413f54d8c63fa71ed212d3bd13e7","Colt M4A1 5.56x45 Assault Rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/b/bb/M4A1_LVOA_Icon.png/300px-M4A1_LVOA_Icon.png?version=75fa0434ce439c38994dea1a1f26ab19","Folder with intelligence":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/85/FolderWithIntelligence_Icon.png?version=4e8c8f0dbe5cef4bdd4d6ac97077b644","DS Arms SA-58 7.62x51":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/2/2a/DS_Arms_SA-58_762x51_PBR.png/300px-DS_Arms_SA-58_762x51_PBR.png?version=38be1c42c20639c444fb3ed7ade3c40d","USB Adapter":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/9b/USB_Adapter_Icon.png?version=d439069fa67f8f6488f71b93269ac781","Springfield Armory M1A 7.62x51":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/1/18/M1sasstrade.png/300px-M1sasstrade.png?version=e2d37786f100077b0b854c5ce10ffffb","20 pcs pack 5.56x45 Warmage ammo":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/fa/Warmage.png?version=1458781f1043328f50b32049ef619f91","Printed circuit board":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/c5/Circuit_Icon.png?version=b7767a9f8946d4cdea1229e1965a4719","60-round MAG5-60 5.56x45 STANAG magazine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/9a/STANAG_magazine_60-round_MAG5_-5.56x45.png?version=287279c12198f57bba4c87588918f11e","Magpul PMAG D-60 5.56x45 60-round magazine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f6/Magpul_PMAG_D-60.png?version=1330166a4f3fcd482f58f1ad0826d7d0","SilencerCo Osprey 9 9x19mm sound suppressor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/6e/Osprey9icon.png?version=d76aaa4ae4e96bc861758932face4ca7","Remington R11 RSASS 7.62x51":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/5/5f/Rsassstandardtrade.png/300px-Rsassstandardtrade.png?version=6545cf9a8dc9becb387a4f548f15836b","Military cable":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/85/MilitaryCableIcon.png?version=4545d2a8af9e33d02b0b07ca2b6882ea","FN P90 5.7x28 submachinegun":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/65/FN_P90_5.7x28_submachinegun_CWDG.png?version=aa20fb2eff8591313d94ff140201b5af","GPNVG-18 Night Vision":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a0/Gpnvgicon.png?version=ffc286929140c57f958b73e20142ca9d","GP coin":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d7/Gp_coin_icon.png?version=e749e8e6851b4a6331782dca7086628b","FN Five-seveN MK2 5.7x28 pistol":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/90/Five-seveN_FDE_icon.png?version=a4e8a3bdb18e839cd17b8c10335bc591","AK-74N 5.45x39 assault rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/f/f1/AK-74N_Magpul.png/300px-AK-74N_Magpul.png?version=5515e99aa098d5b6ea509983a93e54a1","Broken GPhone X":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/80/Broken_GPhone_x_Icon.png?version=188e6b742d4d3cbd39e32cde7cd515b8","Crye Airframe Chops":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2b/CryeAirframeChops_icon.png?version=bff9cccc0b9d61338f7582471cc043d7","Power supply unit":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/81/Psuicon.png?version=27b1983dbcc8e8b14156ff7d24b68076","HK MP7A2 4.6x30 submachinegun":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/74/HKMP7A2Icon.png?version=abc2a01ceeff3315145f323cdc3fc591","Broken GPhone":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/be/Broken_GPhone_Icon.png?version=8fbced8aa8a193f0376f6334d3ec3615","Broken LCD":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/be/Lcd-icon.PNG?version=89b71d99208ba6813d517ef4dbeb966f","Mechanic":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/bd/Mechanic_4_icon.png?version=8fd5ce19290240c905199724fb5dd5c1","AN/PVS-14 Night Vision Monocular":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/25/PVS-14_Icon.png?version=e6a42d9e35a666d2e700f2cde9006386","Screwdriver":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/da/Screwdriver_Icon.png?version=7dc781409ab3a9f6931c14e4283c8d77","Construction measuring tape":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/0e/Construction_Measuring_Tape_Icon.png?version=0014a47911359b7257778012b25f4af2","A set of tools":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/3a/Toolsicon.png?version=37aec16b02afab1d56c16b0dcdd2a5bc","Ammo case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/81/Ammocaseicon.png?version=0a260e9363faa330a35ce6533d2f0cde","Custom plastic MP-133 forestock with mounts":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/63/Custommp133.png?version=8718b0ea822fce99a3ccda075b9a4b8b","Physical bitcoin":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/fa/Bitcoin_icon.png?version=2796a56750d2f623cc86eb25fe47304e","HK MP7A1 4.6x30 submachinegun":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/12/MP7BitcoinIcon.png?version=e8c2a5b90a0d0f7a80bc7c73f96ccbfb","Pliers Elite":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a7/PliersElite.png?version=bbcfac2b413ee11d6e33602484db58f1","MP-133 12ga shotgun":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/7/75/MR-133_Tactical.png/300px-MR-133_Tactical.png?version=eb4c45576b70082192e66a10d2df5bef","Wires":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a4/Wiresicon.png?version=5290c686201f2318562959de42ff4987","Capacitors":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e3/Capacitorsicon.png?version=0ddb687554a65933ef7fed323b594975","TT pistol 7.62x25 TT":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/4c/TTBrunner.png?version=f3f9fa4be135f732b41fb38ec5374854","Tetriz portable game":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d2/Tetriz_icon.png?version=d44afb1eef6a86bc4ada67be3a5e3359","Electric drill":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/5/54/Electric_Drill_icon.png/105px-Electric_Drill_icon.png?version=ed22f55142a333a4149f267964e9c2cb","Vulcan MG night scope 3.5x":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a4/Vulcan_MG_night_scope_3.5x_Icon.png?version=510df0925cba637eaced0c1ac0001624","Wilcox Skull Lock head mount":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/7f/HeadLockTrade.png?version=9257c091fec85ff3048fa84675e5fa3b","Weapon parts":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/79/WeaponPartsIcon.png?version=93f82dfb0b22e56720c33aa8da062062","WD-40 100ml.":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/06/WD40_100ml_Icon.png?version=fe060e6a9776fe1185a02b85ecf3e62c","DVD drive":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/de/DVD_drive_Icon.png?version=4c2d1d04bd34d05b1d7ac9f2bd588a9b","Kinda cowboy hat":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/44/Cow_boy_hat_icon.png?version=d78cb0521101344f015c35d1a3033ef6","GLOCK 17 9x19 pistol":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/59/GLOCK17_Fischer.png?version=dcc28c25fc36149256d4eeefd93fdb65","Military power filter":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/47/Mil_Filter_Icon.png?version=f0bb500127c878a404da418de96fe7b2","OP-SKS":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/a/ab/OP-SKS_Mehcanic.png/300px-OP-SKS_Mehcanic.png?version=0798556d4a61a321c83fb58421cf162c","Working LCD":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/ca/Working_LCD_Icon.png?version=5b6783c2ab50891b24bd0c63cef46076","Simonov Semi-Automatic Carbine SKS 7.62x39":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/2/2e/SKS_for_GP_Coin.png/300px-SKS_for_GP_Coin.png?version=eda8101e0b9236956d878a2380a3ee44","Light bulb":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/97/Bulb_icon.png?version=5eeb7d03870d5807eb8646ca810e5925","PM/PPSH 9x18PM 84-round drum mag for PM":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b1/Makarovdrumicon.png?version=6c72989cd024ed5100182b5b82ac304e","Remington Model 700 Sniper rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/2/2c/M700AACTrade.png/300px-M700AACTrade.png?version=d7607836465306e23ffc540ad97d742f","Powerbank":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/5c/PowerbankIcon.png?version=f241b2d6abdce1324f12121109860aa7","Remington Model 870 12ga shotgun":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d6/M870_Breacher.png?version=e767b0e219c0fbf34c51babbbba34ed2","Mosin rifle sniper carbine stock":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/cb/MosinRifleCarabineStock_Icon.png?version=1b182cc8d8926a9af7b0919273f7c1a0","Regular 730mm Mosin barrel":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f5/730mm_Mosin_Icon.png?version=74968c6e34670bf5099c9491437d83f9","Magnet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/83/Magnet_Icon.png?version=bf803a460111237bdeb13dacbb2296a8","WD-40 400ml":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2d/Wd-40400icon.png?version=fc8e1bae9c68bb41b549fc65e56524a3","X Products X-5 MP5 50-round 9x19 magazine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/0e/Mp5drumicon.png?version=59d871135347087e4cf100cce29315bb","SGA stock for M870":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/12/M870stockmagpulicon.png?version=255924c09761ea746fbf7c3bf0fbf58a","RAM":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/3e/Ramicon.png?version=d3d8f66f79cbf5666c67fbd6abe22f54","Silencerco Hybrid 46 multi-caliber silencer":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/53/Hybrid46icon.png?version=c3e370c7654eae91425aadc453fee4ac","Nippers":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/6d/Nippers_small.jpg?version=178921004508c298ed51370973215fbe","Upper receiver Colt M4A1 5.56x45 for M4A1 assault rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/64/M4upper.png?version=839db7ed70e5186ef3521d4e12be50ba","Magpul MOE M870 forestock":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/06/Magpulm870forestockicon.png?version=f3cf39a5c2e9d75a74980f7592fc4a03","Fab Defence GL Shock Stock":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/0b/Glshockstockicon.png?version=6a9b8bce4c8fde2f619a6571d4fd2c8a","Colt AR-15 charging handle for AR-15":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/06/Ar15handleicon.png?version=5d1d3e4d7000260217b036218bcb1531","260mm barrel for AR-15 and compatible 5.56x45":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/22/260mmm4icon.png?version=d314b367ee8c9e8f2029a2cea5591bcf","Daniel Defence FDE RIS II FSP 9.5 foregrip for AR-15-compatible systems":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/55/RIS_II_FSP_Icon.png?version=4934d200df2eb16f8905026c446b3f11","ProMag AK-A-16 73-round 7.62x39 magazine for AKM and compatibles":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/41/ProMag_AK-A-16_73-round_7.62x39_magazine_for_AKM_and_compatibles_icon.png?version=92820df46c141a8e7725be88249b09d0","AK-74M 5.45x39 assault rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/1/14/AK74M_Zenitco_icon.png/300px-AK74M_Zenitco_icon.png?version=9dbcbc5457ac64d33db65b9d63fed57e","6B43 Zabralo-Sh 6A Armor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/90/FORT_armor_icon.png?version=a0e007e9a95512e180cdecc72d892fa7","Rotor 43 5.56x45 muzzle brake":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a1/Icon_Rotor43_5.56x45.png?version=85b2a70bbc0b2fdcb42e6d4cf8909327","Rotor 43 7.62x39 muzzle brake":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/0a/Icon_Rotor43_7.62.png?version=69f831fd4e06aa95b0aed12ec1ad7d8d","Electric motor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/9f/Electric_motor_icon.png?version=779a542e0b6456bf93fe27e844ba0814","TerraGroup Labs access keycard":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/79/Terragroup_Labs_access_keycard_icon.png?version=eba5a69a56a4ed39cf12bea1e5ed280d","T H I C C Weapon case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/9/95/THICCWCaseTrade.png/300px-THICCWCaseTrade.png?version=93dfef862016e7e8d5f719dfcb3c591c","X-14 M14 50 round 7.62x51 magazine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/90/M1450roundericon.png?version=e4380ac8517e3f26a74f84f9301da809","X-FAL FAL/SA-58 7.62x51 50 rnd magazine":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/df/FAL_50_Icon.png?version=b8b943dd541a45167bdd60cc76ae196f","M14 Ultimak M8 upper part":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/4a/M14_Ultimak_M8_upper_part.png?version=748e32b806fdffde4598b09af0b6c615","MaxRounds Powermag 20-round 12/76 magazine for SOK-12 and compatible weapons":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/6f/Saiga_Powermag20_Icon.png?version=1bcd226c43fe6cfc462fc90b456cab40","NIXXOR lens":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/17/NIXXOR_lens_icon.png?version=0e463321a76d54c138becb81b971639d","Ox bleach":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/77/Bleachicon.png?version=b243be936684f3fc905ccf9527e65f52","Ragman":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/1c/Ragman_4_icon.png?version=44d5537955b4cec1ad2956d52684f127","6B47 Ratnik-BSh Helmet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/85/6b47icon.png?version=01d2d7a96035b4c90d7f8665fb31a4c1","Soap":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/95/Soap_icon.png?version=2680e50997f90a42f05c978b6fd4a07d","6B5-15 Zh -86 \"Uley\" armored rig":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8e/6B5-15icon.png?version=8964e9d5e4b5c7349c0bb6e785ecfa97","Lower half-mask":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f4/Lower_half-mask_icon.png?version=8fcb7f3c312ff68075627149470abb4d","PACA Soft Armor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/91/PACA_icon.png?version=e74b08bd7e440e4c3e23c164ccaa30e7","K1S Visor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/62/K1svisoricon.png?version=1ac4fda2e1cf5fdf14f281d159d49853","Alyonka chocolate bar":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/bc/Alyonka_Chocolate_Bar_icon.png?version=f525048e0630b7415cc07265b006f90d","VKBO army bag":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/35/Armybagicon.png?version=9da36679f63287c1d06fc46721083548","Tactical fleece hat":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/5d/Fleecicon.png?version=fb28251a3e6ddf55944a3e4bab59f9c3","6B47 Helmet with cover (flora digital)":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b4/6bhelmetcamo.png?version=f67b4f4a064b2190799acd870d4b7758","TT pistol 7.62x25 TT Gold":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/98/GoldenTTIcon.png?version=d7aadfa5bb5ab12a2792a66d97edf1dc","5.11 Tactec plate carrier":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e9/TactecIcon.png?version=c41ee50ed6471a4ff7473b0774765bee","Anti-fragmentation glasses":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/23/Anti-fragmentation_goggles_icon.png?version=cdb66de82438350189c1fbe91223b392","UNTAR helmet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e3/UNTARHelmetIcon.png?version=de05a174b4e5a14b9dce188a1dc61150","Max energy":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/ec/NRG_Drink_icon.png?version=877abfbf6d869ceba839df5d0a689cda","MF-UNTAR armor vest":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/62/UNTARArmorIcon.png?version=32b50cee9ee6ef2348de70e9753a5d62","Coffee Majaica":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/14/Coffeicon.png?version=bcd910aeac5c59863a10225c44c4f15a","TarCola":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f9/Tar_Cola_icon.png?version=237dad6de96ee3f8080dfb6586011e26","Pack of milk":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d3/Pack_ofMilk_icon.png?version=6286a2656bcb47f958252dd5545d49c1","BNTI Kirasa-N armor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b6/BNTIKirasaNarmorIcon.png?version=872ec8adeeb5bbfa6606380ccd927777","Piece of plexiglas":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/34/Plexicon.png?version=09df6c98eba590020e008bada1e673e4","ZSh-1-2M face shield":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/03/Zshfaceshieldicon.png?version=d94261e2a08a66e886c060678d72a1f0","Peltor ComTac 2 headset":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/65/Comtac_icon.png?version=ce05f6a0c601c763efdc6ac17c3840d8","Heat-exchange alkali surface washer":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b3/Heat-exchange_alkali_surface_washer_icon.png?version=cc5432636b36e6f035b6bd39a8293143","ANA Tactical Alpha chest rig":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/fa/Alpha_Rig_icon.png?version=f938e6bd47142ac851f3efab5c285b61","Camelbak Tri-Zip Backpack":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/8/88/Tri-Zip_Backpack.png/300px-Tri-Zip_Backpack.png?version=52c43ae6052309f79bd451e5c7621605","Printer paper":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d2/Printer_Paper_icon.png?version=d9ea310c5f6334a9f1a5dd67f57d905e","GSSh-01 active headset":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e1/Gssh.png?version=5a355f3c4534170bd8ebaaf0040992dd","LSHZ-2DTM face shield":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/31/LSHZ_Face_Shield.PNG?version=8769ffba7d1a33b6ceafac2e70280bcb","Maska 1Sch helmet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/72/Maska1Schicon.png?version=8b60ca93706a1ab0280e979fc1d645ca","BNTI Gzhel-K armor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a1/GZHELKArmorIcon.png?version=7b3b359b4b2da32088043e62af02a1cf","ANA Tactical M1 armored rig":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/3c/ANA_Tactical_M1_icon.png?version=41f59814d949878ef8c58438b0ea4172","Round frame sunglasses":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/99/Round_frame_sunglasses_icon.png?version=a4435e2a7b6360bb573ec4cfbce2d318","ANA Tactical M2 armored rig":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/0f/M2Inventory.PNG?version=9599772394ddb47901387ed0e262c2e9","GP-5 gasmask":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b9/GP-5_Icon.png?version=5866baa87aa331fb28b69c52204a3645","Neoprene mask":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/93/Neoprene_Mask_Icon.png?version=5e5d74f188ca7db6cf243770932dc117","Altyn face shield":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/96/Altynfshieldicon.png?version=1359a9cbd8a3fc7c8424160ebab2cc67","Antique teapot":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2b/Teapot_icon.png?version=8fca5be837cbc6c4195283545c269ffc","Belt-A + Belt-B gear rig":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/db/Belt-A_Belt-B_gear_rig_icon.png?version=84ccc632a1569092e41b0bc0c15ef51c","SSO \"Attack 2\" raid backpack":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/d/d5/AttackInventory.PNG/256px-AttackInventory.PNG?version=31cbb581223fc42910340ddbcd49ca73","Zhuk-6a heavy armor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/5c/Zhuk-6a_heavy_armor_icon.png?version=2df7ef169cdc3dfc6311c7ae20fcd39c","DEVTAC Ronin ballistic helmet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/97/DEVTAC_Ronin_ballistic_helmet_Icon.png?version=45a9bc720541472b4b2e0e61a2f84f83","IOTV Gen4 armor (high mobility kit)":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/26/Gen4hmk.png?version=ead6acefb5a64531f519fc0d79283c35","Ars Arma A18 Skanda plate carrier":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f8/A18_Icon.png?version=7bd9dce8e924528b08d686a8d4026ba6","Schaman shampoo":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/78/Shampoo_icon.png?version=a8a5c900ee4dfeb7eed500a4f12726b5","Wartech TV-110 plate carrier":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/ee/Wartech_TV-110_plate_carrier_icon.png?version=57e7cf21b09c85c2a92696af34df425c","IOTV Gen4 armor (full protection)":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/52/IOTVfullIcon.png?version=f3e0edcf5357a8508939a073c724e517","Maska 1Sch face shield":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8f/NormalMaskaShieldTradeIcon.png?version=a6170507ea6bebe7eb50e0b8b72dad52","Vulkan-5 face shield":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/5/57/Vulkan-5_face_shield_icon.png?version=ed7feee16c1c6d8cfaba146e380ed0b4","Antique vase":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/4/4c/Vaseicon.png?version=84b78716600290807fcc06563e4a815f","Paracord":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/17/ParacordIcon.png?version=9691c1c7fb1b6a93cbb0195a1ab7dbc3","Mystery Ranch Blackjack 50 backpack (multicam)":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/6/6c/Mystery_Ranch_Blackjack_50_backpack_icon.png/300px-Mystery_Ranch_Blackjack_50_backpack_icon.png?version=508bb348f61aec920e4406fbbf66f50c","Marked key":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b1/Marked-key-Icon.png?version=96841dfef2c291891c339d155c3b1bb9","Office 112 West wing key":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/a1/San112icon.png?version=81642f1e72ee87bdaaf5b1d963a0f187","Crash Axe":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/bf/CrashAxeIcon.png?version=06bdf816799fcc1c532d3f7bf23f8507","Altyn helmet":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2d/AltynHelmetIcon.png?version=19ea6ac80fe75fc496b44b48ccd0688f","Gold skull ring":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/26/SkullRing_Icon.png?version=c21a70496b85eaf34d12fbac0f6b7881","IOTV Gen4 armor (assault kit)":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/05/Gen4assault.png?version=d278a6dd8a950ddbc3080e6805210bf1","FORT Redut-T5 body armor":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/23/FORT_Redut-T5_body_armor_icon.png?version=379157fd36665d54bae7b65e54081eb7","Jaeger":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/f/f2/Jaeger_4_icon.png?version=7b4743b9fe2b81d70e346e666f44d4b8","MP-153 12ga semi-automatic shotgun":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/2/24/MP_153_icon.png/300px-MP_153_icon.png?version=967f9a130ac6a19466dcf0929864945a","Cobra EKP-8-18 reflex sight":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/7b/Cobra_EKP-8-18_reflex_sight_icon.png?version=c724d49a33c4b2b835cf1b0deb709517","Sb.5 5-round 12/76 magazine for SOK-12 and compatible weapons":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/d1/Saig12mag.png?version=65ddd1f86caacafbd9742a07a6ec5f2e","Dovetail OP-SKS mount.":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/81/Opsksdt.png?version=ccd13c5da9871860e298bc6f4a28fa1a","CMS kit":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/6d/CMS_Icon.png?version=17f692b1578271f9d9e44bf2cdd3db6e","Metal fuel tank":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/6/66/Metal-fuel-tank-icon.png?version=ac628c337744bc197cf930a9d5a53e0a","Nightforce ATACR 7-35x56 riflescope":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/8/8b/Nightforce_ATACR_7-35x56Icon.png?version=c93ebaf2cf11cdea728d8ad970954301","5L propane tank":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/14/5L_propane_tank_icon.png?version=07e7bc0db77e465c54a1b5465a575c7a","34mm one piece magmount made by Nightforce":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/19/34mmmounticon.png?version=eb4a835cd2861865ba6f52faa82c6bd0","Can of herring":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2d/Herring_icon.png?version=c1d70f670b620597e03c823815fe97b9","Squash spread":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/e3/Squash_Spread_icon.png?version=d110b6dd0802df8fcaf0a2e81d59342a","Mr. Holodilnick thermobag":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/a/ab/Mr._Holodilnick_thermobag_icon.png?version=a2a04b1f4fa291a3391dac0af81f0336","FLIR RS-32 2.25-9x 35mm 60Hz thermal riflescope":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/94/FLIR_RS-32_Icon.png?version=6ff1e09bdee606039dbceced4f4de009","Bramit silencer for a Mosin rifle":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/37/BramitTradeIcon.png?version=d706c5a9a6d7ac2244b7d5ae0d5293ea","A pack of nails":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/7/72/Nailsicon.png?version=18fe397bc927714fb2b2b5c5c4329ab7","Small S I C C case":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/d/da/SmallSICCIcon.png?version=cdead21c5158e0656ca77b8b73e00c3a","Camper axe":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/1/13/X7_Axe_icon.png?version=c02b5c7a38b08665a1fc8baab5db46de","Fuel conditioner":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/04/Fuelcondicon.png?version=afb1b9971edb0c68c8b79db000f31b73","Frameless":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/9/91/AdzeIcon.png?version=4a5c0f7cbf925b2ff84ace3f70cc7ba1","Humpback salmon":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/0/02/Humpback_icon.png?version=966f53804684d983c0580a88e09c3366"
+
+
+	,"Military COFDM wireless Signal Transmitters":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/3/3a/COFDM_Icon.png?version=0fd8bd34a48244fc132f409c4d807103"
+	,"Shustrilo sealing foam":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/e/ea/Shusicon.png?version=a264fc7c9ec328ee2d31c33c50e1e8b5"
+	,"Xenomorph sealing foam":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/c/ce/Xenoicon.png?version=110ea42ae331671bf4ef9410063facdb"
+	,"Corrugated hose":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/b/b0/Hoseicon.png?version=51c20ce935ad10ea15ecc7fcd1740972"
+	,"Phase control relay":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/2/2c/Relay_Icon.png?version=654dc6f078d0bfa6de18c0ab07bb0773"
+	,"Respirator":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/e/ed/Respirator_icon.png/105px-Respirator_icon.png?version=9c9adbd3a6b6434696da56cc0ec4690b"
+	,"Wartech gear rig (TV-109, TV-106)":"https://gamepedia.cursecdn.com/escapefromtarkov_gamepedia/thumb/5/57/Wartech_gear_rig_icon.png/105px-Wartech_gear_rig_icon.png?version=67127728466fc18ff203fa5631af5fe3"
+	}
+	var quest={"Prapor":[{"name":"Debut","item":{},"raid":{}},{"name":"Checking","item":{},"raid":{}},{"name":"Shootout picnic","item":{},"raid":{}},{"name":"Delivery from the past","item":{},"raid":{}},{"name":"BP depot","item":{},"raid":{}},{"name":"Bad rep evidence","item":{"Secure case for documents 0031":null},"raid":{"Secure case for documents 0031":null}},{"name":"Ice cream cones","item":{"60-round 6L31 5.45x39 magazine for AK-74 and compatibles":6},"raid":{"60-round 6L31 5.45x39 magazine for AK-74 and compatibles":6}},{"name":"Postman Pat - Part 1","item":{},"raid":{}},{"name":"Shaking up teller","item":{},"raid":{}},{"name":"The Punisher - Part 1","item":{},"raid":{}},{"name":"The Punisher - Part 2","item":{"Lower half-mask":10},"raid":{"Lower half-mask":10}},{"name":"The Punisher - Part 3","item":{},"raid":{}},{"name":"The Punisher - Part 4","item":{"Bars A-2607- 95x18":10},"raid":{"Bars A-2607- 95x18":10}},{"name":"The Punisher - Part 5","item":{"AK-74N 5.45x39 assault rifle":3,"Colt M4A1 5.56x45 Assault Rifle":3,"PM 9x18PM pistol":5},"raid":{"AK-74N 5.45x39 assault rifle":3,"Colt M4A1 5.56x45 Assault Rifle":3,"PM 9x18PM pistol":5}},{"name":"The Punisher - Part 6","item":{},"raid":{}},{"name":"Polikhim hobo","item":{},"raid":{}},{"name":"Big customer","item":{},"raid":{}},{"name":"No offence","item":{"M67 Hand grenade":10},"raid":{"M67 Hand grenade":10}},{"name":"Grenadier","item":{},"raid":{}},{"name":"Perfect mediator","item":{},"raid":{}},{"name":"Insomnia","item":{},"raid":{}},{"name":"Test drive - Part 1","item":{},"raid":{}},{"name":"Regulated materials","item":{"6-STEN-140-M military battery":null,"OFZ 30x160mm shell":10},"raid":{"6-STEN-140-M military battery":null,"OFZ 30x160mm shell":10}}],"Therapist":[{"name":"Shortage","item":{"Salewa FIRST AID KIT":5},"raid":{"Salewa FIRST AID KIT":5}},{"name":"Sanitary Standards - Part 1","item":{"Gas analyzer":null},"raid":{"Gas analyzer":null}},{"name":"Sanitary Standards - Part 2","item":{},"raid":{}},{"name":"Operation Aquarius - Part 1","item":{},"raid":{}},{"name":"Operation Aquarius - Part 2","item":{},"raid":{}},{"name":"Painkiller","item":{"Morphine injector":5},"raid":{"Morphine injector":5}},{"name":"Pharmacist","item":{},"raid":{}},{"name":"Supply plans","item":{},"raid":{}},{"name":"General wares","item":{"Can of beef stew":15},"raid":{"Can of beef stew":15}},{"name":"Car repair","item":{"Car battery":4,"Spark plug":8},"raid":{"Car battery":4,"Spark plug":8}},{"name":"Health Care Privacy - Part 1","item":{},"raid":{}},{"name":"Health Care Privacy - Part 2","item":{},"raid":{}},{"name":"Health Care Privacy - Part 3","item":{},"raid":{}},{"name":"Health Care Privacy - Part 4","item":{},"raid":{}},{"name":"Health Care Privacy - Part 5","item":{},"raid":{}},{"name":"Postman Pat - Part 2","item":{},"raid":{}},{"name":"Out of curiosity","item":{},"raid":{}},{"name":"Trust regain","item":{},"raid":{}},{"name":"Hippocratic Vow","item":{},"raid":{}},{"name":"Private clinic","item":{},"raid":{}},{"name":"Athlete","item":{},"raid":{}},{"name":"Decontamination service","item":{},"raid":{}},{"name":"An apple a day - keeps the doctor away","item":{},"raid":{}}],"Skier":[{"name":"Supplier","item":{},"raid":{}},{"name":"The Extortionist","item":{},"raid":{}},{"name":"Stirrup","item":{},"raid":{}},{"name":"What's on the flash drive?","item":{},"raid":{}},{"name":"Golden swag","item":{},"raid":{}},{"name":"Chemical - Part 1","item":{"Dorm room 220 Key":null},"raid":{"Dorm room 220 Key":null}},{"name":"Chemical - Part 2","item":{},"raid":{}},{"name":"Chemical - Part 3","item":{},"raid":{}},{"name":"Chemical - Part 4","item":{},"raid":{}},{"name":"Loyalty buyout","item":{},"raid":{}},{"name":"Friend from the West - Part 1","item":{"Flyye MBSS Backpack":2,"Crye Precision AVS platecarrier":1},"raid":{"Flyye MBSS Backpack":2,"Crye Precision AVS platecarrier":1}},{"name":"Friend from the West - Part 2","item":{},"raid":{}},{"name":"\"Vitamins\" - Part 1","item":{},"raid":{}},{"name":"\"Vitamins\" - Part 2","item":{"Respirator":5},"raid":{"Respirator":5}},{"name":"Lend lease - Part 1","item":{},"raid":{}},{"name":"Informed means armed","item":{},"raid":{}},{"name":"Chumming","item":{},"raid":{}},{"name":"Kind of sabotage","item":{},"raid":{}},{"name":"Silent caliber","item":{},"raid":{}},{"name":"Flint","item":{},"raid":{}},{"name":"Bullshit","item":{"False flash drive":null},"raid":{"False flash drive":null}},{"name":"Setup","item":{},"raid":{}}],"Peacekeeper":[{"name":"Fishing Gear","item":{},"raid":{}},{"name":"Tigr Safari","item":{},"raid":{}},{"name":"Scrap Metal","item":{},"raid":{}},{"name":"Eagle Eye","item":{},"raid":{}},{"name":"Humanitarian Supplies","item":{"MRE lunch box":5},"raid":{"MRE lunch box":5}},{"name":"The Cult - Part 1","item":{},"raid":{}},{"name":"The Cult - Part 2","item":{},"raid":{}},{"name":"Spa Tour - Part 1","item":{},"raid":{}},{"name":"Spa Tour - Part 2","item":{},"raid":{}},{"name":"Spa Tour - Part 3","item":{"WD-40 100ml.":null,"Clin wiper":2,"Corrugated hose":2,"Ox bleach":2},"raid":{"WD-40 100ml.":null,"Clin wiper":2,"Corrugated hose":2,"Ox bleach":2}},{"name":"Spa Tour - Part 4","item":{},"raid":{}},{"name":"Spa Tour - Part 5","item":{},"raid":{}},{"name":"Spa Tour - Part 6","item":{},"raid":{}},{"name":"Spa Tour - Part 7","item":{"Morphine injector":4,"Heat-exchange alkali surface washer":2,"Corrugated hose":2,"5L propane tank":2},"raid":{"Morphine injector":4,"Heat-exchange alkali surface washer":2,"Corrugated hose":2,"5L propane tank":2}},{"name":"Cargo X - Part 1","item":{},"raid":{}},{"name":"Cargo X - Part 2","item":{},"raid":{}},{"name":"Cargo X - Part 3","item":{},"raid":{}},{"name":"Lend lease - Part 2","item":{"Military COFDM wireless Signal Transmitter":2,"Virtex programmable processor":3},"raid":{"Military COFDM wireless Signal Transmitter":2,"Virtex programmable processor":3}},{"name":"Wet Job - Part 1","item":{},"raid":{}},{"name":"Wet Job - Part 2","item":{},"raid":{}},{"name":"Wet Job - Part 3","item":{},"raid":{}},{"name":"Wet Job - Part 4","item":{},"raid":{}},{"name":"Wet Job - Part 5","item":{},"raid":{}},{"name":"Wet Job - Part 6","item":{},"raid":{}},{"name":"The guide","item":{},"raid":{}},{"name":"Peacekeeping mission","item":{},"raid":{}},{"name":"Mentor","item":{},"raid":{}}],"Mechanic":[{"name":"Gunsmith - Part 1","item":{},"raid":{}},{"name":"Gunsmith - Part 2","item":{},"raid":{}},{"name":"Gunsmith - Part 3","item":{},"raid":{}},{"name":"Gunsmith - Part 4","item":{},"raid":{}},{"name":"Gunsmith - Part 5","item":{},"raid":{}},{"name":"Gunsmith - Part 6","item":{},"raid":{}},{"name":"Gunsmith - Part 7","item":{},"raid":{}},{"name":"Gunsmith - Part 8","item":{},"raid":{}},{"name":"Gunsmith - Part 9","item":{},"raid":{}},{"name":"Gunsmith - Part 10","item":{},"raid":{}},{"name":"Gunsmith - Part 11","item":{},"raid":{}},{"name":"Gunsmith - Part 12","item":{},"raid":{}},{"name":"Gunsmith - Part 13","item":{},"raid":{}},{"name":"Gunsmith - Part 14","item":{},"raid":{}},{"name":"Gunsmith - Part 15","item":{},"raid":{}},{"name":"Gunsmith - Part 16","item":{},"raid":{}},{"name":"Farming - Part 1","item":{},"raid":{}},{"name":"Farming - Part 2","item":{},"raid":{}},{"name":"Farming - Part 3","item":{},"raid":{}},{"name":"Farming - Part 4","item":{},"raid":{}},{"name":"Signal - Part 1","item":{},"raid":{}},{"name":"Signal - Part 2","item":{"PC CPU":3,"Rechargeable battery":3,"Printed circuit board":3,"Broken GPhone":3},"raid":{"PC CPU":3,"Rechargeable battery":3,"Printed circuit board":3,"Broken GPhone":3}},{"name":"Signal - Part 3","item":{},"raid":{}},{"name":"Signal - Part 4","item":{},"raid":{}},{"name":"Bad habit","item":{"Malboro Cigarettes":7,"Strike Cigarettes":7,"Wilston cigarettes":7},"raid":{"Malboro Cigarettes":7,"Strike Cigarettes":7,"Wilston cigarettes":7}},{"name":"Scout","item":{},"raid":{}},{"name":"Insider","item":{},"raid":{}},{"name":"Psycho Sniper","item":{},"raid":{}},{"name":"Import","item":{},"raid":{}},{"name":"Fertilizers","item":{"Wires":5,"Capacitors":5},"raid":{"Wires":5,"Capacitors":5}},{"name":"A Shooter Born in Heaven","item":{},"raid":{}},{"name":"Introduction","item":{"Jaeger":null},"raid":{"Jaeger":null}}],"Ragman":[{"name":"Only business","item":{},"raid":{}},{"name":"Make ULTRA Great Again","item":{},"raid":{}},{"name":"Big sale","item":{},"raid":{}},{"name":"The Blood of War - Part 1","item":{},"raid":{}},{"name":"Dressed to kill","item":{},"raid":{}},{"name":"Gratitude","item":{},"raid":{}},{"name":"Sales Night","item":{},"raid":{}},{"name":"Hot delivery","item":{},"raid":{}},{"name":"Database - Part 1","item":{},"raid":{}},{"name":"Database - Part 2","item":{},"raid":{}},{"name":"Minibus","item":{},"raid":{}},{"name":"Sew it good - Part 1","item":{},"raid":{}},{"name":"Sew it good - Part 2","item":{},"raid":{}},{"name":"Sew it good - Part 3","item":{},"raid":{}},{"name":"Sew it good - Part 4","item":{"Wartech gear rig (TV-109, TV-106)":2,"BlackRock chest rig":2},"raid":{"Wartech gear rig (TV-109, TV-106)":2,"BlackRock chest rig":2}},{"name":"The Blood of War - Part 2","item":{"Fuel conditioner":4},"raid":{"Fuel conditioner":4}},{"name":"The Blood of War - Part 3","item":{},"raid":{}},{"name":"The key to success","item":{},"raid":{}},{"name":"Living high is not a crime - Part 1","item":{},"raid":{}},{"name":"Living high is not a crime - Part 2","item":{"Antique teapot":3,"Antique vase":2},"raid":{"Antique teapot":3,"Antique vase":2}},{"name":"Charisma brings success","item":{},"raid":{}},{"name":"No fuss needed","item":{},"raid":{}},{"name":"Supervisor","item":{},"raid":{}},{"name":"Scavenger","item":{},"raid":{}}],"Jaeger":[{"name":"Acquaintance","item":{},"raid":{}},{"name":"The survivalist path - Unprotected, but dangerous","item":{},"raid":{}},{"name":"The survivalist path - Thrifty","item":{},"raid":{}},{"name":"The survivalist path - Zhivchik","item":{},"raid":{}},{"name":"The survivalist path - Wounded beast","item":{},"raid":{}},{"name":"The survivalist path - Tough guy","item":{},"raid":{}},{"name":"The survivalist path - Cold blooded","item":{},"raid":{}},{"name":"The survivalist path - Zatoichi","item":{},"raid":{}},{"name":"The survivalist path - Eagle-owl","item":{},"raid":{}},{"name":"The survivalist path - Combat medic","item":{},"raid":{}},{"name":"Huntsman path - Secured perimeter","item":{},"raid":{}},{"name":"Huntsman path - The trophy","item":{},"raid":{}},{"name":"Huntsman path - Woods cleaning","item":{},"raid":{}},{"name":"Huntsman path - Controller","item":{},"raid":{}},{"name":"Huntsman path - Sell-out","item":{"Maska 1Sch helmet":null},"raid":{"Maska 1Sch helmet":null}},{"name":"Huntsman path - Woods keeper","item":{"Shturman key":null},"raid":{"Shturman key":null}},{"name":"Huntsman path - Justice","item":{},"raid":{}},{"name":"Huntsman path - Evil watchman","item":{},"raid":{}},{"name":"Huntsman path - Eraser","item":{},"raid":{}},{"name":"Huntsman path - Eraser -  Part 2","item":{},"raid":{}},{"name":"Ambulance","item":{},"raid":{}},{"name":"Shady business","item":{"Secure Flash drive":3},"raid":{"Secure Flash drive":3}},{"name":"Nostalgia","item":{"Jaeger":null},"raid":{"Jaeger":null}},{"name":"Fishing place","item":{"TerraGroup Labs access keycard":3},"raid":{"TerraGroup Labs access keycard":3}},{"name":"Courtesy visit","item":{},"raid":{}},{"name":"Hunting trip","item":{},"raid":{}},{"name":"Reserv","item":{},"raid":{}},{"name":"The Tarkov shooter - Part 1","item":{},"raid":{}},{"name":"The Tarkov shooter - Part 2","item":{},"raid":{}},{"name":"The Tarkov shooter - Part 3","item":{},"raid":{}},{"name":"The Tarkov shooter - Part 4","item":{},"raid":{}},{"name":"The Tarkov shooter - Part 5","item":{},"raid":{}},{"name":"The Tarkov shooter - Part 6","item":{},"raid":{}},{"name":"The Tarkov shooter - Part 7","item":{},"raid":{}},{"name":"The Tarkov shooter - Part 8","item":{},"raid":{}}],"Fence":[{"name":"Collector","item":{"Old firesteel":null,"Antique axe":null,"Battered antique Book":null,"FireKlean gun lube":null,"Golden rooster":null,"Silver Badge":null,"Deadlyslob's beard oil":null,"Golden 1GPhone":null,"Jar of DevilDog mayo":null,"Can of sprats":null,"Fake mustache":null,"Kotton beanie":null},"raid":{"Old firesteel":null,"Antique axe":null,"Battered antique Book":null,"FireKlean gun lube":null,"Golden rooster":null,"Silver Badge":null,"Deadlyslob's beard oil":null,"Golden 1GPhone":null,"Jar of DevilDog mayo":null,"Can of sprats":null,"Fake mustache":null,"Kotton beanie":null}}]}
+
+
+	//构建选单
+	var table=document.querySelector("#list")
+	for (i in json)
+	{
+		if (json[i].length==1 && json[i][0].length==0) delete json[i]	
+		tr=document.createElement("tr");table.append(tr)
+		
+		th=document.createElement("th");tr.append(th)
+		th.innerHTML=i	
+		
+		td=document.createElement("td");tr.append(td)
+		
+		select=document.createElement("select");td.append(select)
+		select.classList.add("remember")
+		select.setAttribute('id',i);
+		select.onclick=function()
+		{
+			calc()
+		}
+		for (j=0;j<1+json[i].length;++j)
+		{		
+			var e=document.createElement("option")
+			if (j==0)
+				e.innerHTML="Locked"
+			else
+				e.innerHTML=j+"级"
+			select.append(e)		
+		}
+	}
+	//构建任务选单
+	["Prapor","Therapist","Fence","Skier","Peacekeeper","Mechanic","Ragman","Jaeger"]	
+	.forEach(function(trader,ti){
+		ti+=1
+		var elt=document.querySelector("#quest")
+		elt.innerHTML+="<section id=tabs-"+ti+" class=tab-panel><table/ ></section>"
+		var table=document.querySelector("#tabs-"+ti+" table")
+		var tr=document.createElement("tr");table.append(tr)
+		tr.innerHTML="<td>任务名称</td> <td>(是否)已完成</td> "
+		quest[trader].forEach(function(task){
+			var tr=document.createElement("tr");table.append(tr)
+			var res=""
+			res+="<tr>"
+				res+="<td>"
+				res+=task.name
+				res+="</td>"		
+				res+="<td>"
+				res+='<input type="checkbox" class="remember" id="'+escape(task.name)+'" onclick="calc()"></input>'
+				res+="</td>"					
+			res+="</tr>"
+			tr.innerHTML=res
+			console.log(task)
+		})
+	})
+
+
+
+
+	remember()
+	load()
+	//
+	function capitalize(string){
+		var words = string.split(' ');
+		for(var i = 0; i < words.length; i ++)
+			words[i] = words[i].charAt(0).toUpperCase()+words[i].slice(1);
+		return words.join(' ');
+
+	}
+	var t={}
+	for (i in icons) t[capitalize(i)]=icons[i]
+	icons=t
+	function getimg(t)
+	{
+		t=capitalize(t)
+		if (t in icons)
+			return '<img src="'+icons[t]+'"></img>'
+		return ""
+	}
+	function calc()
+	{
+		save()
+		var res={}
+		var raid={}
+		var who={}
+		var cor={
+			 "Corrugated hoses":"Corrugated hose"
+			,"Phase control relays":"Phase control relay"
+			,"Gas analyzers":"Gas analyzer"
+			,"Military COFDM wireless Signal Transmitters":"Military COFDM wireless Signal Transmitter"
+		}		
+		//藏身处
+		for (i in json)
+		{
+			for (j=document.getElementById(i).selectedIndex;j<json[i].length;++j)
+				for (t in json[i][j])
+				{
+					tt=t;if (t in cor) t=cor[t]
+					res[t]=(res[t] ||0) + json[i][j][tt]
+					who[t]=who[t] ||{};who[t][i]=true				
+				}
+		}
+		//任务
+		for (trader in quest)
+		quest[trader].forEach(function(task){
+			console.log(trader,task,escape(task.name))
+			if (document.getElementById(escape(task.name)).checked) return			
+			for (i in task.item) 
+			{
+				if (i in ["secure folder 0031"]) continue
+				ii=i;if (i in cor) i=cor[i]
+				res[i]=(res[i] || 0)+task.item[ii]
+				who[i]=who[i] || {};who[i][task.name+"("+trader+")"]=true
+				if ( i in task.raid)
+					raid[i]=(raid[i] ||0)+ task.raid[ii]
+			}
+		})
+		delete res["Roubles"]
+		delete res["Rouble"]
+		//绘制
+		var text="<table>"
+		text+="<tr><td>缩略图</td><td>名称</td><td>数量</td><td>已有数量</td><td>需求来愿</td></tr>"
+		order=[]
+		for (i in res)
+			order.push(i)
+		order.sort()
+		order.forEach(function(i)
+		{
+			if (!res[i]) return 
+			if (document.getElementById("ignoreengough").checked && res[i]==localStorage.getItem(i)) return
+			w=""
+			for (k in who[i])
+				w+=k+",  "
+			icon="https://escapefromtarkov.gamepedia.com/File:"+capitalize(i)+"_Icon.png"
+			text+="<tr><td style='text-align:right'>"+getimg(i)+"</td>"
+			text+="<td>"+i+"</td>"
+			if (!raid[i])
+				text+="<td>"+res[i]+"</td>"
+			else if (res[i]>raid[i])
+				text+="<td>"+res[i]+"("+raid[i]+" in raid)</td>"
+			else
+				text+="<td>"+raid[i]+" in raid</td>"
+			text+='<td><input class="remember" id="'+i+'"value=0 style="width:30px"/></td>'
+			text+="<td>"+w+"</td></tr>"		
+		})			
+		text+="</table>"
+		document.getElementById("msg").innerHTML=text
+		remember()
+		load()
+	}
+	calc()
+
+
+
+	/*
+	var json={}
+	document.querySelectorAll(".wikitable").forEach((table,ti)=>{		
+		var name=document.querySelectorAll(".tabbernav a")[ti].innerText
+		json[name]=[]
+		table.querySelectorAll("tr").forEach((tr,tri)=>{ if (tri==0) return			
+			console.log(tr)
+			level=parseInt(tr.querySelector("th").innerHTML)		
+			console.log(name,level)
+			var res={};json[name].push(res)
+			tr.querySelector("td").querySelectorAll("a").forEach(a=>{
+				var t=a.innerHTML
+				var count=parseInt(a.parentNode.innerText.split(" ")[0])			
+				if (isNaN(count)) return
+				res[t]=(res[t] ||0)+count
+				console.log(t,count)
+			})
+		})
+	})
+	console.log(JSON.stringify(json))
+
+
+
+	var icons={}
+	document.querySelectorAll("table img").forEach(t=>{
+		//var name=t.getAttribute("alt");name=name.substr(0,name.lastIndexOf(" "))
+		var name=t.parentElement.getAttribute("title")
+		icons[name]=t.src
+	})
+	console.log(JSON.stringify(icons))
+
+
+
+
+	//document.querySelectorAll(".wikitable")[1].querySelectorAll("tr")[2].querySelectorAll("td li")[0]
+	document.querySelectorAll(".wikitable").forEach(table=>{
+		var name=table.querySelector("tr a").textContent.toString().trim();
+		if (!name) return;
+		if (name!="Therapist") return
+		console.log(name)
+		table.querySelectorAll("tr").forEach((tr,tri)=>{
+			tri-=2;if (tri<0) return
+			tr.querySelectorAll("td li").forEach(li=>{
+				console.log(li.textContent)
+			})		
+		})
+	})
+	
+	
+var json={}
+document.querySelectorAll(".wikitable").forEach(table=>{
+	var name=table.querySelector("tr a").textContent.toString().trim();
+	if (!name) return;
+	//if (name!="Peacekeeper") return
+	json[name]=[]
+	//console.log(name)
+	table.querySelectorAll("tr").forEach((tr,tri)=>{
+		tri-=2;if (tri<0) return
+		var task={};json[name].push(task)
+		task.name=tr.querySelector("th").textContent.trim()		
+		task.item={}
+		task.raid={}
+		tr.querySelectorAll("td li").forEach(li=>{			
+			res=/^Find\s*(\d*)\s*\</.exec(li.innerHTML)
+			var a=li.querySelector("a")
+			
+			if (res && a)
+			{				
+				t=a.getAttribute("title")
+				num=res[1]
+				a=/(\d+) pc[s]*$/.exec(li.innerHTML)
+				if (!num && a) num=a[1]
+				if (!num) a=1
+				task.item[t]=(task.item[t] ||0) + parseInt(num)
+				task.raid[t]=(task.raid[t] ||0) + parseInt(num)
+				return
+			}
+			res=/^Find in raid\s*(\d*)\s*\</.exec(li.innerHTML)
+			var a=li.querySelector("a")
+			if (res && a)
+			{																
+				t=a.getAttribute("title")
+				num=res[1]
+				a=/(\d+) pc[s]*$/.exec(li.innerHTML)
+				if (!num && a) num=a[1]
+				if (!num) a=1
+				task.item[t]=(task.item[t] ||0) + parseInt(num)
+				task.raid[t]=(task.raid[t] ||0) + parseInt(num)
+				return
+			}		
+			res=/^Find an? .* in raid/.exec(li.innerHTML)			
+			if (res && a)
+			{																
+				t=a.getAttribute("title")
+				num=res[1]
+				a=/(\d+) pc[s]*$/.exec(li.innerHTML)
+				if (!num && a) num=a[1]
+				if (!num) a=1
+				task.item[t]=(task.item[t] ||0) + parseInt(num)
+				task.raid[t]=(task.raid[t] ||0) + parseInt(num)
+				return
+			}				
+		})				
+	})
+})
+//console.log(JSON.stringify(json,null,2))
+console.log(JSON.stringify(json))
+	*/
+	</script>
+	</body>
+</html>
