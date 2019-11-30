@@ -237,7 +237,7 @@
 							document.getElementById("efthmE").src=helmat[document.getElementById("efthm").selectedIndex].url
 							document.getElementById("eftveE").src=vests[document.getElementById("eftve").selectedIndex].url
 							document.getElementById("eftrgE").src=rigs[document.getElementById("eftrg").selectedIndex].url
-							console.log(getgearturn())
+							
 							document.getElementById("efttdl").innerHTML="("+100*getgearturn()+"%)"						
 						}
 						remember()
@@ -440,7 +440,13 @@
 					<button class="read">读取设置</button>
 					<button class="write">写入设置</button>(重启生效或手工输入)<br>										
 				</div>
-			
+
+				<div id=customms style="   border: 1px solid #000;margin: 10px 0px;">
+					<p>自定义鼠标灵敏度曲线</p>
+					<table>
+						<tr><td>放大倍数</td><td>鼠标灵敏度放大倍数</td></tr>
+					</table>
+				</div>
 				<script src="chart/Chart.min.js" > </script>
 				<style href="chart/Chart.min.css" > </style>	
 				<script src="d3.v5.min.js"></script>	
@@ -567,14 +573,12 @@
 									
 									t=ctx.measureText(title)
 									
-									ch=t.actualBoundingBoxAscent-t.actualBoundingBoxDescent+5
-									console.log(ch)
+									ch=t.actualBoundingBoxAscent-t.actualBoundingBoxDescent+5									
 									y=ctx.canvas.height/2-(title.length/2)*ch
 									for (var i=0;i<title.length;++i)
 									{
 										t=title[i]
-										ctx.fillText(t,0,y); 
-										console.log(y)
+										ctx.fillText(t,0,y); 										
 										y+=ch
 									}
 									
@@ -779,8 +783,7 @@
 
 						};
 						block.set(datasetIndex,index)											
-						nearbypoint=claculateY(x,block)
-						console.log(nearbypoint)
+						nearbypoint=claculateY(x,block)						
 					}
 					function claculateY(X,block)
 					{						
@@ -847,7 +850,6 @@
 							if ( nv==null || fun(nv,value)>fun(t,value)  )
 								nv=t
 						})								
-						console.log(nv,value-nv.y)
 						if (nv!=null && Math.abs(nv.y-value)<0.02) value=nv.y
 						//////////////////
 																
@@ -874,6 +876,7 @@
 				</script>
 				<script src="apex.js"> </script>
 				<script src="pubg.js"> </script>
+				<script src="mousesensitivity/custom.js"> </script>
 			</section>
 			<!-- ===击杀提示=========================================================== -->
 			<section id="tabs-2" class="tab-panel">	
