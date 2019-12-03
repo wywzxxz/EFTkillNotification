@@ -105,6 +105,7 @@
 			{
 				if (e==null)
 					e=document.querySelectorAll(".remember")			
+				console.log("check",e)
 				e.forEach(function(e){				
 					if (!(e.id in localStorage) || localStorage.getItem(e.id)=="") return
 					if (e.type=="checkbox" )
@@ -139,13 +140,13 @@
 		</td>
 		<td id="teskDetail"></td>
 		</table>
-		<input id="ignoreengough" type="checkbox" class="remember" onclick="calc()" checked>隐藏数量足够的物品</input><br>
+		<input id="ignoreengough" type="checkbox" class="remember" onclick="calc()" checked> 隐藏数量足够的物品  </input><br>
 		已知问题：<br>
 		1.少数任务相关物品(Corrugated hoses,Phase control relays,Gas analyzers,Military COFDM wireless Signal Transmitters)数量可能比实际要少<br>
 		2.人力有限可能会有bug，仅供参考<br>
 		3.图片来自于官方wiki(https://escapefromtarkov.gamepedia.com/)，可能因网络问题无法加载<br>
 		有问题请联系wywzxxz,联系方式:逃离塔科夫贴吧3群(859030316) 群ID：wywzxxz (非官方人员，普通水友。若不在即弃坑，请打扰)<br>
-		<div id="msg" />
+		<div id="msg" > </div>
 	<script>
 	remember()
 	load()
@@ -293,7 +294,12 @@
 	icons=t
 	function getimg(t)
 	{
-		t=capitalize(t)
+		console.log(t)
+		//return '<img src="items/'+escape(t.replace(/[\/\*]/g,"_")).replace(/\%/g,"%25")+'.png"></img>'
+		a=icons[capitalize(t)]
+		b="items/"+escape(t.replace(/[\/\*]/g,"_")).replace(/\%/g,"%25")+".png"		
+		return '<img src="'+a+'" onerror="if (!this.reload) this.src=\'' +b+'\';this.reload=true" ></img>'			
+		t=capitalize(t)		
 		if (t in icons)
 			return '<img src="'+icons[t]+'"></img>'
 		return ""
@@ -309,6 +315,12 @@
 			,"Phase control relays":"Phase control relay"
 			,"Gas analyzers":"Gas analyzer"
 			,"Military COFDM wireless Signal Transmitters":"Military COFDM wireless Signal Transmitter"
+			,"Pressure gauges":"Pressure gauge"
+			,"Silicone tubes":"Silicone tube"
+			,"Screw nuts":"Screw nut"
+			,"M67 Hand grenade":"M67"
+			,"Colt M4A1 5.56x45 Assault Rifle":"M4A1"
+			,"AK-74N 5.45x39 assault rifle":"AK-74N"
 		}		
 		//藏身处
 		for (i in json)
@@ -370,118 +382,6 @@
 		load()
 	}
 	calc()
-
-
-
-	/*
-	var json={}
-	document.querySelectorAll(".wikitable").forEach((table,ti)=>{		
-		var name=document.querySelectorAll(".tabbernav a")[ti].innerText
-		json[name]=[]
-		table.querySelectorAll("tr").forEach((tr,tri)=>{ if (tri==0) return			
-			console.log(tr)
-			level=parseInt(tr.querySelector("th").innerHTML)		
-			console.log(name,level)
-			var res={};json[name].push(res)
-			tr.querySelector("td").querySelectorAll("a").forEach(a=>{
-				var t=a.innerHTML
-				var count=parseInt(a.parentNode.innerText.split(" ")[0])			
-				if (isNaN(count)) return
-				res[t]=(res[t] ||0)+count
-				console.log(t,count)
-			})
-		})
-	})
-	console.log(JSON.stringify(json))
-
-
-
-	var icons={}
-	document.querySelectorAll("table img").forEach(t=>{
-		//var name=t.getAttribute("alt");name=name.substr(0,name.lastIndexOf(" "))
-		var name=t.parentElement.getAttribute("title")
-		icons[name]=t.src
-	})
-	console.log(JSON.stringify(icons))
-
-
-
-
-	//document.querySelectorAll(".wikitable")[1].querySelectorAll("tr")[2].querySelectorAll("td li")[0]
-	document.querySelectorAll(".wikitable").forEach(table=>{
-		var name=table.querySelector("tr a").textContent.toString().trim();
-		if (!name) return;
-		if (name!="Therapist") return
-		console.log(name)
-		table.querySelectorAll("tr").forEach((tr,tri)=>{
-			tri-=2;if (tri<0) return
-			tr.querySelectorAll("td li").forEach(li=>{
-				console.log(li.textContent)
-			})		
-		})
-	})
-	
-	
-var json={}
-document.querySelectorAll(".wikitable").forEach(table=>{
-	var name=table.querySelector("tr a").textContent.toString().trim();
-	if (!name) return;
-	//if (name!="Fence") return
-	json[name]=[]
-	//console.log(name)
-	table.querySelectorAll("tr").forEach((tr,tri)=>{
-		tri-=2;if (tri<0) return
-		var task={};json[name].push(task)
-		task.name=tr.querySelector("th").textContent.trim()		
-		task.item={}
-		task.raid={}
-		tr.querySelectorAll("td li").forEach(li=>{			
-			var a=li.querySelector("a")
-			
-			res=/^(?:Find|Get)\s*(\d*)\s*\</i.exec(li.innerHTML)						
-			if (res && a)
-			{				
-				t=a.getAttribute("title")
-				num=res[1]
-				a=/(\d+) pc[s]*$/.exec(li.innerHTML)
-				if (!num && a) num=a[1]
-				if (!num) num=1
-				task.item[t]=(task.item[t] ||0) + parseInt(num)
-				task.raid[t]=(task.raid[t] ||0) + parseInt(num)
-				return
-			}
-			res=/^Find in raid\s*(\d*)\s*\</i.exec(li.innerHTML)
-			var a=li.querySelector("a")
-			if (res && a)
-			{																
-				t=a.getAttribute("title")
-				num=res[1]
-				a=/(\d+) pc[s]*$/.exec(li.innerHTML)
-				if (!num && a) num=a[1]
-				if (!num) num=1
-				task.item[t]=(task.item[t] ||0) + parseInt(num)
-				task.raid[t]=(task.raid[t] ||0) + parseInt(num)
-				return
-			}		
-			res=/^Find an? .* in raid/i.exec(li.innerHTML)			
-			if (res && a)
-			{																
-				t=a.getAttribute("title")
-				num=res[1]
-				a=/(\d+) pc[s]*$/.exec(li.innerHTML)
-				if (!num && a) num=a[1]
-				if (!num) num=1
-				task.item[t]=(task.item[t] ||0) + parseInt(num)
-				task.raid[t]=(task.raid[t] ||0) + parseInt(num)
-				return
-			}				
-		})				
-	})
-})
-//console.log(JSON.stringify(json,null,2))
-console.log(JSON.stringify(json))
-
-	*/
 	</script>
 	</body>
 </html>

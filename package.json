@@ -1,7 +1,6 @@
 {
   "name": "eftkillnotification",
   "productName": "eftkillnotification",
-  "version": "0.4.0",
   "description": "killnotification for escape from tarkov",
   "main": "src/index.js",
   "scripts": {
@@ -13,11 +12,13 @@
   "license": "MIT",
   "dependencies": {
     "chokidar": "^3.2.2",
+    "koa": "^2.11.0",
     "nerdamer": "^1.0.4"
   },
   "devDependencies": {
     "electron": "^7.0.1"
   },
+  "version": "0.0.1",
   "build": {
     "appId": "com.wywzxxz",
     "win": {

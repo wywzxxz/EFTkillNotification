@@ -52,7 +52,7 @@
 	}	
 	//绘制图表
 	r6drawchart.datas.push(function(){
-		var travel=parseFloat(document.querySelector('#travel').value)		
+		var travel=parseFloat(document.querySelector('#travel').value)
 		arg_load()		
 		function infinitY(data){						
 			var x1,x2,y1,y2
@@ -77,7 +77,7 @@
 		data.forEach(function(e){
 			e.update=e.update || function(){};e.set=e.set || function(){}
 			e.update()
-		})	
+		})			
 		return {label: "自定义曲线",data: data,showLine: true,borderWidth:5,borderColor: "lightgrey"}
 	})
 })();

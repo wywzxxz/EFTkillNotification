@@ -136,7 +136,8 @@
 		<label for="tab3">物品预留统计</label> 
  		<!-- Tab 4 -->
 		<input type="radio" name="tabset" id="tab4" aria-controls="tabs-4" class="remember" >
-		<label for="tab3">关于</label> 
+		<label for="tab4">关于</label> 
+		
 		<div class="tab-panels">
 			<!-- ====鼠标灵敏度调整========================================================== -->
 			<section id="tabs-1" class="tab-panel">		
@@ -244,45 +245,57 @@
 						eftgear()
 						function eftread(notload=false)
 						{
-							var fs=require("fs")
 							try{
-								var json=fs.readFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini")
-							}catch(e)
-							{
-								alert("塔科夫配置文件读取错误")
+								const fs=require("fs")
+								try{
+									var json=fs.readFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini")
+								}catch(e)
+								{
+									alert("塔科夫配置文件读取错误")
+									console.log(e)
+								}
+								if (!json || json.length==0)  return alert("塔科夫配置文件路径不存在")
+								json=JSON.parse(""+json)
+								if (!notload)
+								{
+									document.querySelector("#eftms1").value=json["bak_MouseSensitivity"] || json["MouseSensitivity"]						
+									document.querySelector("#eftms2").value=json["MouseAimingSensitivity"]						
+									save()
+									r6drawchart()
+								}
+								return json
+							}catch(e){
+								alert("出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases");
 							}
-							if (!json || json.length==0)  return alert("塔科夫配置文件路径不存在")
-							json=JSON.parse(""+json)
-							if (!notload)
-							{
-								document.querySelector("#eftms1").value=json["bak_MouseSensitivity"] || json["MouseSensitivity"]						
-								document.querySelector("#eftms2").value=json["MouseAimingSensitivity"]						
-								save()
-								r6drawchart()
-							}
-							return json
 						}
 						function eftwrite()
 						{
-							var json=eftread(true)						
-							json["MouseSensitivity"]=parseFloat(document.querySelector("#eftms1").value)
-							json["MouseAimingSensitivity"]=parseFloat(document.querySelector("#eftms2").value)		
-							
-							json["bak_MouseSensitivity"]=json["MouseSensitivity"]
-							if (document.getElementById("efttd").checked)
-								json["MouseSensitivity"]/=(1+getgearturn())
-							
 							try{
-								fs.writeFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini",JSON.stringify(json,null,2))
-							}catch(e)
-							{
-								alert("塔科夫配置文件读取错误")
-							}						
+								const fs=require("fs")
+								var json=eftread(true)						
+								json["MouseSensitivity"]=parseFloat(document.querySelector("#eftms1").value)
+								json["MouseAimingSensitivity"]=parseFloat(document.querySelector("#eftms2").value)		
+								
+								json["bak_MouseSensitivity"]=json["MouseSensitivity"]
+								if (document.getElementById("efttd").checked)
+									json["MouseSensitivity"]/=(1+getgearturn())
+								
+								try{								
+									fs.writeFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini",JSON.stringify(json,null,2))
+								}catch(e)
+								{
+									alert("塔科夫配置文件读取错误")
+									console.log(e)
+								}
+							}catch(e){
+								alert("出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases");
+							}
+							
 						}
 					</script>
 				</div>
 				
-				<div style="   border: 1px solid #000;margin: 10px 0px;">
+				<div id="battlefield5" style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>战地V</p>
 					<button id="bf5calibration">以此为基准</button><br>
 					<label>游戏配置文件目录</label>
@@ -327,6 +340,13 @@
 						</tr>						
 
 						<tr>
+							<td>GstInput.MouseSensitivityVehicle</td>
+							<td>
+								<input id="bf5vms" class="remember" value=1.00 onchange="r6drawchart()"> </input><!-- GstInput.SoldierZoomSensitivity6x00 -->								
+							</td>
+						</tr>	
+	
+						<tr>
 							<td>DPI</td>
 							<td>
 								<input id="bf5dpi" class="remember"  value="1600" onchange="r6drawchart()" />
@@ -337,48 +357,6 @@
 					
 					<button id="bf5read">读取设置</button>
 					<button id="bf5write">写入设置</button>(重启生效)<br>
-					<script>
-					(function(){
-						function read(){
-							var path=parsePath(document.querySelector("#bf5config").value+"\\PROFSAVE_profile_synced")
-							console.log(path)
-							var text=""+fs.readFileSync(path)
-							var json={order:[]}
-							text=text.split(/\r?\n/)
-							text.forEach(function(e){
-								e=e.split(/\s+/)
-								json[e[0]]=e[1]								
-								json.order.push(e[0])
-							})										
-							return json							
-						}
-						document.querySelector("#bf5read").onclick=function(){
-							var json=read(true);
-							document.querySelector("#bf5ms").value=json["GstInput.MouseSensitivity"]
-							document.querySelector("#bf5ms_1_25").value=json["GstInput.SoldierZoomSensitivity1x25"]
-							document.querySelector("#bf5ms_1_50").value=json["GstInput.SoldierZoomSensitivity1x50"]
-							document.querySelector("#bf5ms_2").value=json["GstInput.SoldierZoomSensitivity2x00"]
-							document.querySelector("#bf5ms_3").value=json["GstInput.SoldierZoomSensitivity3x00"]
-							document.querySelector("#bf5ms_6").value=json["GstInput.SoldierZoomSensitivity6x00"]
-							save()							
-							r6drawchart()
-						}
-						document.querySelector("#bf5write").onclick=function(){
-							var json=read(true);
-							json["GstInput.MouseSensitivity"]=parseFloat(document.querySelector("#bf5ms").value)
-							json["GstInput.SoldierZoomSensitivity1x25"]=parseFloat(document.querySelector("#bf5ms_1_25").value)
-							json["GstInput.SoldierZoomSensitivity1x50"]=parseFloat(document.querySelector("#bf5ms_1_50").value)
-							json["GstInput.SoldierZoomSensitivity2x00"]=parseFloat(document.querySelector("#bf5ms_2").value)
-							json["GstInput.SoldierZoomSensitivity3x00"]=parseFloat(document.querySelector("#bf5ms_3").value)
-							json["GstInput.SoldierZoomSensitivity6x00"]=parseFloat(document.querySelector("#bf5ms_6").value)
-							var res=""
-							json.order.forEach(t=>res+=t+" "+json[t]+"\n")
-							var path=parsePath(document.querySelector("#bf5config").value+"\\PROFSAVE_profile_synced")
-							fs.writeFileSync(path,res)
-						}
-					})();
-					</script>
-					
 				</div>
 				
 				<div id=apex style="   border: 1px solid #000;margin: 10px 0px;">
@@ -455,8 +433,7 @@
 				<script>
 				remember()
 				Chart.defaults.global.elements.line.fill = false;			
-				let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				
-				nerdamer.set('SOLUTIONS_AS_OBJECT', true);
+				//let nerdamer = require('nerdamer');require('nerdamer/Algebra.js');require('nerdamer/Calculus.js');require('nerdamer/Solve.js');				nerdamer.set('SOLUTIONS_AS_OBJECT', true);
 				function which(f,name,x)
 				{
 					for (var i=0;i<f.length;++i)
@@ -654,63 +631,7 @@
 						options.data.datasets.push({label: "Escape From Tarkov",data: data,showLine: true,borderColor: "#8e5ea2"})						
 					})();
 					//战地5
-					(function(){
-						var arg={
-							 a:0.00636618283677
-							,b:0.00003183091418							
-							,bf5ms:parseFloat( document.querySelector("#bf5ms").value )														
-							,bf5ms_1_25:parseFloat( document.querySelector("#bf5ms_1_25").value )
-							,bf5ms_1_50:parseFloat( document.querySelector("#bf5ms_1_50").value )
-							,bf5ms_2:parseFloat( document.querySelector("#bf5ms_2").value )
-							,bf5ms_3:parseFloat( document.querySelector("#bf5ms_3").value )
-							,bf5ms_6:parseFloat( document.querySelector("#bf5ms_6").value )					
-							,bf5dpi:parseInt( document.querySelector("#bf5dpi").value )							
-							,mtd_1:31416
-						}
-						document.querySelector("#bf5calibration").onclick=function()
-						{					
-							document.querySelector('#travel').value=travel*data[1].y
-							save()
-							r6drawchart()
-						}						
-						var t=nerdamer.solveEquations(["1/31416=a*0+b","1/7854=a*0.015+b","1/(4834*4)=a*x+b"])
-						arg.a=t.a
-						arg.b=t.b						
-						function update()
-						{
-							this.y=1/(arg.a*arg.bf5ms+arg.b)/arg[this.ms]*(this.mtd/arg.mtd_1)				
-							this.y= (this.y/arg.bf5dpi) / travel
-						}
-												
-						function set(newy){
-							newy=newy* travel *arg.bf5dpi																				
-							arg[this.ms]=1/(newy*(arg.a*arg.bf5ms+arg.b)/(this.mtd/arg.mtd_1))
-							upload(arg)
-						}
-						//,update:function(){ this.y=(arg.a*arg.bf5ms*(this.mtd/31416)*arg[this.ms]+arg.b)*(arg.bf5dpi/400)*4834     } 
-						//,set:function(newy){ arg[this.ms]=(newy/4834/(arg.bf5dpi/400)-arg.b)/arg.a/(this.mtd/31416)/arg.bf5ms;upload(arg);  }
-
-						var data= [	
-								{x:0,y:0}
-								,{x_named:1.00,x: 1,label:"腰射/1倍镜",mtd:arg.mtd_1
-									,update:function(){this.y=1/(arg.a*arg.bf5ms+arg.b);this.y= (this.y/arg.bf5dpi) / travel}
-									,set:function(newy){newy=newy* travel *arg.bf5dpi;arg.bf5ms=(1/newy-arg.b)/arg.a;upload(arg)}
-								}
-								,{x_named:1.25,x: 1.0*44/35,label:"1.25倍镜" ,mtd:38228,ms:"bf5ms_1_25",update:update,set:set}
-								,{x: 1.0*273/183,x_named:1.5,label:"1.5倍镜" ,mtd:45140,ms:"bf5ms_1_50",update:update,set:set}
-								,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164,ms:"bf5ms_2",update:update,set:set}
-								,{x: 1.0*105/36,x_named:3,label:"3倍镜" ,mtd:87756,ms:"bf5ms_3",update:update,set:set}								
-								,{x: 1.0*209/34,x_named:6,label:"6倍镜" ,mtd:174528,ms:"bf5ms_6",update:update,set:set
-									//,update:function(){this.y=(this.mtd/31456)/arg[this.ms]/(arg.bf5dpi/400)/4834/(arg.a*arg.bf5ms+arg.b)  } 
-									//,set:function(newy){ arg[this.ms]=Math.min(2,Math.max(0,(this.mtd/31456)/newy/(arg.bf5dpi/400)/4834/(arg.a*arg.bf5ms+arg.b)));upload(arg);  }
-								}
-							]						
-						data.push({update:infinitY.bind(null,data),label:"∞"})
-						data.forEach(function(e){
-							e.update=e.update || function(){};e.set=e.set || function(){}
-							e.update()
-						})						
-						options.data.datasets.push({label: "BattleField V",data: data,showLine: true,borderColor: "#00cc00"})						
+					(function(){					
 					})();
 					//彩虹六号										
 					(function(){
@@ -876,6 +797,7 @@
 				</script>
 				<script src="apex.js"> </script>
 				<script src="pubg.js"> </script>
+				<script src="mousesensitivity/bf5.js"> </script>
 				<script src="mousesensitivity/custom.js"> </script>
 			</section>
 			<!-- ===击杀提示=========================================================== -->
@@ -893,88 +815,69 @@
 				因此在这里我的路径为“Z:\Highlights\Escape From Tarkov”<br>
 				</div>
 				<script>
-					var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");		
-					const fs=require("fs")
-					const chokidar = require('chokidar');
-					var watcher=null
-					var tabsmp3play=function(){};
-					var tabsmp3stop=function(){};
-					(function(){
-						var playing=false;
-						var count=0,target=0;
-						tabsmp3play=function(notcount=false){
-							if(!notcount)
-								target+=1							
-							if (! playing)
-							{
-								playing=true
-								tabs2mp3.play();
-								return
-							}							
-						}
-						tabsmp3stop=function()
-						{
-							//tabs2mp3.stop();
-							count=target=0
-						}
-						tabs2mp3.addEventListener("ended", function(){
-							playing=false							
-							count+=1
-							if (count<target)
-								tabsmp3play(true)
-						}, false);
-					})()
-					function killwatcher()
-					{
-						if (watcher) watcher.close()
-						var p=document.querySelector("#nh").value
-						watcher=chokidar.watch(p,{ignoreInitial: true})
-							.on("add",function(path){
-								tabsmp3play()
-								document.querySelector("#killConfirmList").innerHTML+=path+"<br>"
-							})
-							.on("unlink",function(){
-								tabsmp3stop()
-								document.querySelector("#killConfirmList").innerHTML=""
-							})
-					}
-					setTimeout(killwatcher,1)
-					/*
-					(function(){
-						const fs=require("fs")					
-						var tabs2old=Array(100).length
-						var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");						
-						function tabs2()
-						{
-							var p=document.querySelector("#nh").value
-							fs.readdir(p,function(err,dir){
-								if (err) return setTimeout(tabs2,1000)
-								if (tabs2old.length!=dir.length)
+					try{
+						var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");		
+						const fs=require("fs")
+						const chokidar = require('chokidar');
+						var watcher=null
+						var tabsmp3play=function(){};
+						var tabsmp3stop=function(){};
+						(function(){
+							var playing=false;
+							var count=0,target=0;
+							tabsmp3play=function(notcount=false){
+								if(!notcount)
+									target+=1							
+								if (! playing)
 								{
-									console.log(dir)
-									if (tabs2old.length<dir.length)
-										tabs2mp3.play();
-									document.querySelector("#tabs2p").innerHTML=dir.join("<br>")
-								}
-								tabs2old=dir
-								setTimeout(tabs2,1000)
-							})
-							
+									playing=true
+									tabs2mp3.play();
+									return
+								}							
+							}
+							tabsmp3stop=function()
+							{
+								//tabs2mp3.stop();
+								count=target=0
+							}
+							tabs2mp3.addEventListener("ended", function(){
+								playing=false							
+								count+=1
+								if (count<target)
+									tabsmp3play(true)
+							}, false);
+						})()
+						function killwatcher()
+						{
+							if (watcher) watcher.close()
+							var p=document.querySelector("#nh").value
+							watcher=chokidar.watch(p,{ignoreInitial: true})
+								.on("add",function(path){
+									tabsmp3play()
+									document.querySelector("#killConfirmList").innerHTML+=path+"<br>"
+								})
+								.on("unlink",function(){
+									tabsmp3stop()
+									document.querySelector("#killConfirmList").innerHTML=""
+								})
 						}
-						tabs2()
-					})()
-					*/
+						setTimeout(killwatcher,1)
+					}catch(e)
+					{
+						document.querySelector("#killConfirmList").innerHTML="出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases"
+					}
 					
 				</script>
 			</section>
 			<section id="tabs-3" class="tab-panel">	
 				<div style="position: absolute; top: 100px; left: 0; right: 0; bottom: 0;">
-				<iframe src="calc.html" style="display: block; width: 100%; height: 100%; border: none;" />
+				<iframe src="./calc.html" style="display: block; width: 100%; height: 100%; border: none;" ></iframe>
 				</div>
 			</section>
 			<section id="tabs-4" class="tab-panel">	
 				wywzxxz 制作<br>
 				仓库地址：https://github.com/wywzxxz/EFTkillNotification<br>
+				客户端备用下载地址:http://wywzxxz.com:10000/dist/eftkillnotification%200.0.1.exe<br>
 			</section>
 		</div>
 		<script>

@@ -24,8 +24,7 @@
 		})		
 		save()
 	}	
-	//读取配置文件
-	const fs=require("fs")
+	//读取配置文件	
 	var pattern=[
 		  /(\(SensitiveName="(Normal)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/
 		 ,/(\(SensitiveName="(Scoping)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/		 
@@ -34,27 +33,38 @@
 		 ,/(\(SensitiveName="(Scope4X)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/
 	]
 	function read(opt={}){
-		opt.path=parsePath(document.querySelector("#"+title+"_config").value+"\\GameUserSettings.ini")		
-		var text=""+fs.readFileSync(opt.path)
-		//console.log(text)
-		var json={}
-		pattern.forEach(t=>{ 			
-			a=text.match(t)
-			if (!a) return			
-			json[a[2].toLocaleLowerCase()]=parseFloat(a[3])
-		})
-		json["text"]=text		
-		return json							
+		try{
+			const fs=require("fs")
+			opt.path=parsePath(document.querySelector("#"+title+"_config").value+"\\GameUserSettings.ini")		
+			var text=""+fs.readFileSync(opt.path)
+			//console.log(text)
+			var json={}
+			pattern.forEach(t=>{ 			
+				a=text.match(t)
+				if (!a) return			
+				json[a[2].toLocaleLowerCase()]=parseFloat(a[3])
+			})
+			json["text"]=text		
+			return json				
+		}catch(e){
+			alert("出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases");
+		}
 	}				
 	document.querySelector("#"+title+" .read").onclick=function(){
-		var json=read();		
-		for (i in arg)  if (i in json)
+		try{
+			const fs=require("fs")
+			var json=read();		
+			for (i in arg)  if (i in json)
+			{
+				 arg[i]=json[i]
+			}
+			arg_save()
+			save()							
+			r6drawchart()
+		}catch(e)
 		{
-			 arg[i]=json[i]
+			alert("出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases");
 		}
-		arg_save()
-		save()							
-		r6drawchart()
 	}
 	document.querySelector("#"+title+" .write").onclick=function(){
 		var opt={}

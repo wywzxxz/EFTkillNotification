@@ -19,21 +19,27 @@
 		})		
 		save()
 	}	
-	//读取配置文件
-	const fs=require("fs")
+	//读取配置文件	
 	function read(opt={}){
-		opt.path=parsePath(document.querySelector("#apex_config").value+"\\settings.cfg")		
-		var text=""+fs.readFileSync(opt.path)
-		var json={order:[]}
-		text=text.split(/\r?\n/)
-		text.forEach(function(e){
-			e=e.split(/\s+/)
-			val=e.pop()
-			e=e.join(' ')
-			json[e]=val
-			json.order.push(e)
-		})										
-		return json							
+		try{
+			const fs=require("fs")
+			opt.path=parsePath(document.querySelector("#apex_config").value+"\\settings.cfg")		
+			var text=""+fs.readFileSync(opt.path)
+			var json={order:[]}
+			text=text.split(/\r?\n/)
+			text.forEach(function(e){
+				e=e.split(/\s+/)
+				val=e.pop()
+				e=e.join(' ')
+				json[e]=val
+				json.order.push(e)
+			})										
+			return json							
+		}catch(e)
+		{
+			alert("出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases");
+			return null;
+		}
 	}	
 	document.querySelector("#apex_read").onclick=function(){
 		var json=read();		
@@ -46,16 +52,22 @@
 		r6drawchart()
 	}
 	document.querySelector("#apex_write").onclick=function(){
-		var opt={}
-		var json=read(opt);
-		for (i in arg) if (i in json)
-		{			
-			json[i]='"'+arg[i]+'"'
+		try{
+			var opt={}
+			var json=read(opt);
+			for (i in arg) if (i in json)
+			{			
+				json[i]='"'+arg[i]+'"'
+			}
+			var res=""
+			json.order.forEach(t=>res+=t+" "+json[t]+"\n")
+			console.log(res)
+			const fs=require("fs")
+			fs.writeFileSync(opt.path,res)
+		}catch(e)
+		{
+			alert("出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases");
 		}
-		var res=""
-		json.order.forEach(t=>res+=t+" "+json[t]+"\n")
-		console.log(res)		
-		fs.writeFileSync(opt.path,res)
 	}	
 	
 	//绘制图表

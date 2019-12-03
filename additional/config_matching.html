@@ -1,0 +1,344 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css" media="all">@import "css/style.css?ver=0.1.0";</style>
+    <title>Battlestate Games Launcher - Matching Configuration</title>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+		new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+		j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+		'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-P664RGF');</script>
+    <!-- End Google Tag Manager -->
+
+</head>
+<body class="popup resizable">
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P664RGF"
+                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<div id="window_buttons">
+    <div class="minimize"></div>
+    <div class="maximize"></div>
+    <div class="close"></div>
+</div>
+<div id="page" class="configMatching draggable">
+    <div class="head draggable">
+        <div class="container draggable">
+            <h2 data-i18n="Configure game servers list for matching" class="draggable"></h2>
+            <section class="table">
+                <div class="head">
+                    <div></div>
+                    <div class="initialSort"><span data-i18n="Region"></span><span class="dir" data-dir="asc"></span></div>
+                    <div><span data-i18n="Name"></span><span class="dir"></span></div>
+                    <div><span data-i18n="Average matching time"></span><span class="dir"></span></div>
+                    <div><span data-i18n="Ping"></span><span class="dir"></span></div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <div id="message">
+        <div class="container">
+            <form id="configLauncherForm" onsubmit="return false;">
+                <section class="table hidden">
+                </section>
+            </form>
+            <div class="no_results hidden center" data-i18n="Servers list is empty"></div>
+        </div>
+    </div>
+    <div class="foot">
+        <div class="container">
+            <div id="submit_form" onclick="submitForm();" class="button huge popup fix-right pull-right">
+                <span data-i18n="Apply"></span>
+                <div class="effect glow_1"></div>
+                <div class="effect glow_2"></div>
+            </div>			
+            <div class="button dark fix-left pull-right" onclick="launcher.close()" data-i18n="Cancel"></div>
+			<div class="button dark fix-left pull-right" id="wRem" onclick="wRem()" >Remember list</div>
+            <div id="set_auto" onclick="clickRow(event, this);" class="fix-left pull-left">
+                <p class="checkbox">
+                    <input type="checkbox" name="set_auto:boolean" id="set_auto_input"/>
+                    <label for="set_auto_input"><span data-i18n="Use automatic server selection"></span> (<span data-ipRegion></span>)</label></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="js/plugins/moment-with-locales.min.js"></script>
+    <script type="text/javascript" src="js/plugins/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="js/plugins/select2/js/select2.min.js"></script>
+    <script type="text/javascript" src="js/plugins/i18next.min.js"></script>
+    <script type="text/javascript" src="js/plugins/jquery-i18next.min.js"></script>
+    <script type="text/javascript" src="js/plugins/jquery.lazyload.min.js"></script>
+    <script type="text/javascript" src="js/plugins/jquery.serializejson.min.js"></script>
+    <script type="text/javascript" src="js/plugins/jquery.mask.min.js"></script>
+    <script type="text/javascript" src="js/plugins/slick/slick.min.js"></script>
+    <script type="text/javascript" src="js/conf.js?ver=0.0.1"></script>
+    <script type="text/javascript" src="js/launcher.js?ver=0.0.1"></script>
+    <script type="text/javascript" src="js/global.js?ver=0.0.1"></script>
+    <script type="text/javascript" src="js/common.js?ver=0.0.1"></script>
+    <link href="js/plugins/select2/css/select2.min.css" rel="stylesheet" />
+    <script type="text/javascript">
+        var maxPing = 15000;	
+		var wRem_mode=0
+		var wRem_data={}
+		var wRem=function(){
+			if(!wRem_mode)
+			{
+				localStorage.setItem("wRem_data",JSON.stringify(wRem_data))
+				alert("data saved.")
+			}
+			else
+			{
+				localStorage.setItem("wRem_data","")
+				alert("data erased.")
+			}
+			wRem_mode=!wRem_mode
+				
+		}
+        function renderForm(json) {
+			//尝试重建列表			
+			wRem_data=JSON.parse(JSON.stringify(json))
+			var t=localStorage.getItem("wRem_data")
+			if (t && t.length>0)json=JSON.parse(t)			
+			//
+	        if(window.environment !== 'Production') {
+		        console.log(json);
+	        }
+	        try {
+                if(json.IpRegion.length) {
+                    $('[data-ipRegion]').text(json.IpRegion);
+                }
+	        } catch(e) {console.log('empty json.IpRegion');}			
+	        var selectedDatacenters = [];
+	        if(null === json.SelectedDatacenters) {
+		        json.SelectedDatacenters = [];
+            }
+	        try {
+                if(json.Datacenters.length>0) {
+                    $.each(json.Datacenters, function( index, value ) {
+                    	if( (json.SelectedDatacenters.indexOf(value.dataCenter) > -1)) {
+		                    selectedDatacenters.push(value.dataCenter);
+	                    }
+                        $('#message .table').append(renderRow(value, json.SelectedDatacenters));
+                    });
+                    $('#message .table').removeClass('hidden');
+                } else {
+                    $('#message .no_results').removeClass('hidden');
+                }
+	        } catch(e) {
+		        $('#message .no_results').removeClass('hidden');
+		        $('#set_auto_input').attr('checked', 'checked');
+	        }
+
+	        if(selectedDatacenters.length <= 0) {
+		        $('#set_auto_input').attr('checked', 'checked');
+	        } else {
+		        $('#set_auto_input').removeAttr('checked');
+	        }
+
+	        initSort();
+	        formChanged();
+        }
+
+        function renderRow(obj, selectedArray) {
+        	var result,
+                selected = '',
+                disabled = 'disabled="disabled"',
+                keyName = obj.dataCenter,
+                id = "dataCenter_"+keyName,
+                average_time = '00:00';
+
+        	if($.inArray( keyName, selectedArray ) >= 0) {
+		        selected='checked="checked"';
+            }
+
+            if(obj.avgTimeAwait >= 0) {
+	            average_time =moment().startOf('day').seconds(obj.avgTimeAwait).format('mm:ss');
+            }
+
+        	result = '<div class="row" onclick="clickRow(event, this);">'+
+                       '<div><p class="checkbox"><input type="checkbox" name="'+keyName+':boolean" '+selected+' '+disabled+' id="'+id+'"/><label for="'+id+'"></label></p></div>' +
+                       '<div sort="'+obj.region+'">' + obj.region + '</div>' +
+                       '<div sort="'+obj.dataCenter+'">' + obj.dataCenter + '</div>' +
+                       '<div sort="'+obj.avgTimeAwait+'">' + average_time + '</div>' +
+                       '<div sort="-3" data-input-id="'+id+'" data-center="' + obj.dataCenter + '" class="ping">' + '<img src="img/loader.svg" />' + '</div>' +
+                     '</div>';
+
+        	return result;
+        }
+
+        function submitForm() {
+	        if(!$('#submit_form').hasClass('disabled')) {
+                try {
+
+                    var data = getFormData();
+
+	                if(window.environment !== 'Production') {
+		                console.log(data);
+	                }
+
+                    if(null !== data){
+                        launcher.apply(JSON.stringify({dataCenters: data}));
+                    }
+
+                } catch (e) {
+                    console.log(e);
+                }
+	        }
+        }
+
+        function formChanged() {
+	        if($('#set_auto_input').is(':checked')) {
+		        lockInputs();
+	        } else {
+		        unlockInputs();
+	        }
+
+            var data = getFormData();
+
+            if (null === data) {
+	            $('#submit_form').addClass('disabled');
+            } else if((data.length === 0) && (!$('#set_auto_input').is(':checked'))) {
+		        $('#submit_form').addClass('disabled');
+	        } else {
+		        $('#submit_form').removeClass('disabled');
+            }
+        }
+
+        function getFormData() {
+	        var data = null;
+
+        	if($('#set_auto_input').is(':checked')) {
+		        data = [];
+            } else {
+        		var json = $('#configLauncherForm').serializeJSON();
+
+		        $.each(json, function( key, value ) {
+		        	if(null === data) {data=[];}
+			        if(true === value) {
+				        data.push(key);
+			        }
+		        });
+            }
+
+	        return data;
+        }
+
+        function clickRow(e, item) {
+	        e.preventDefault();
+	        try {
+		        var checkbox = $(item).find('input[type="checkbox"]');
+		        if(checkbox.attr('id') !== "set_auto_input") {
+			        $('#set_auto_input').attr('checked', false);
+			        unlockInputs();
+		        }
+		        if(canUnlock(checkbox)) {
+                    checkbox.attr("checked", !checkbox.attr("checked"));
+		        }
+	        } catch (e) {
+		        console.log(e);
+	        }
+	        formChanged();
+        }
+
+        function setPing(dataCenter, val) {
+        	var div = $('div.ping[data-center="'+dataCenter+'"]');
+	        if(parseInt(div.attr('data-center-ping-val')) !== val) {
+		        div.attr('data-center-ping-val', val);
+		        div.attr('sort', val);
+		        switch (val) {
+			        case -1:
+				        div.html('<span data-i18n="ping_timedout"></span>');
+				        $('#dataCenter_'+dataCenter).attr('disabled', 'disabled');
+				        $('#dataCenter_'+dataCenter).attr("checked", false);
+				        break;
+			        case -2:
+				        $('#dataCenter_'+dataCenter).attr('disabled', 'disabled');
+				        $('#dataCenter_'+dataCenter).attr("checked", false);
+				        div.html('<span class="error" data-i18n="ping_error"></span>');
+				        break;
+			        default:
+			        	if(canUnlock($('#dataCenter_'+dataCenter)) && (!$('#set_auto_input').attr('checked'))) {
+					        $('#dataCenter_'+dataCenter).removeAttr('disabled');
+                        }
+				        div.html(val);
+		        }
+		        whenJqueryFuncAvailable('localize',  function() {
+			        $('div.ping[data-center="'+dataCenter+'"]').localize();
+		        });
+            }
+	        formChanged();
+        }
+
+        function lockInputs () {
+	        $.each($('#configLauncherForm input'), function( key, value ) {
+		        $(value).attr('disabled', 'disabled');
+		        $(value).attr("checked", false);
+	        });
+        }
+
+        function unlockInputs () {
+	        $.each($('#configLauncherForm input'), function( key, value ) {
+	        	if(canUnlock(value)) {
+		            $(value).removeAttr('disabled');
+		        }
+	        });
+        }
+
+        function canUnlock(input) {
+	        var result = true,
+                inputId = $(input).attr('id'),
+		        pingVal = parseInt($('[data-input-id="'+inputId+'"]').attr('data-center-ping-val'));
+
+	        if(inputId !== "set_auto_input") {
+                if(typeof pingVal !== 'undefined') {
+                    if((maxPing >= pingVal) && (pingVal >= 0)) {
+                        result = true;
+                    }
+                }
+	        } else {
+		        result = true;
+            }
+
+            return result;
+        }
+
+        function initSort() {
+	        $(".table>.head>div").on("click", function () {
+		        var self = $(this);
+
+		        if( self.find(".dir").length ) {
+		        	var asc = (self.find(".dir").attr('data-dir') === "asc")?false:true;
+
+                    $(".dir").removeAttr("data-dir");
+
+                    if(!asc) {
+	                    self.find(".dir").attr('data-dir', "desc");
+                    } else {
+	                    self.find(".dir").attr('data-dir', "asc");
+                    }
+
+                    var fn = _sort(self.index() + 1, asc);
+                    $("#configLauncherForm>.table").html($("#configLauncherForm>.table>.row").sort(fn));
+		        }
+	        });
+	        $('.table>.head>.initialSort').trigger( "click" ).trigger( "click" );
+        }
+    </script>
+    <style>
+        @media screen and (min-width: 992px) {
+            html[lang="de"] #page.configMatching section.table>.head>div:nth-child(4) .dir[data-dir="asc"] {
+                transform: translateX(19px) rotate(180deg);
+            }
+            html[lang="de"] #page.configMatching section.table>.head>div:nth-child(4) .dir {
+                transform: translateX(19px);
+            }
+        }
+    </style>
+</div>
+</body>
+</html>
