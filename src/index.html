@@ -3,6 +3,15 @@
   <head>
     <meta charset="utf-8">
     <title></title>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d20e2324ec6c92dc3d8024e676455e9f";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
 	<style>
 		.tabset > input[type="radio"] {
 		  position: absolute;
@@ -208,17 +217,17 @@
 					<script>										
 						helmat.forEach(t=>{
 							var e=document.createElement("option")
-							e.innerHTML=t.name
+							e.innerHTML="["+t.class+"]"+t.name
 							document.getElementById("efthm").append(e)
 						})
 						vests.forEach(t=>{
 							var e=document.createElement("option")
-							e.innerHTML=t.name
+							e.innerHTML="["+t.class+"]"+t.name
 							document.getElementById("eftve").append(e)
 						})
 						rigs.forEach(t=>{
 							var e=document.createElement("option")
-							e.innerHTML=t.name
+							e.innerHTML="["+t.class+"]"+t.name
 							document.getElementById("eftrg").append(e)
 						})
 						document.getElementById("efthm").onclick=eftgear
@@ -616,12 +625,21 @@
 						var data= [	
 								{x:0,y:0}
 								,{x: 1,mtd:28800,x_named:1,ms:"eftms1",label:"腰射",update:update,set:set}
-								,{x: 1.0*96/68,mtd:44300,x_named:1,ms:"eftms2",label:"机瞄",update:update,set:set}
+								,{x: 1.0*96/68,mtd:28799/*44300*/,x_named:1,ms:"eftms2",label:"机瞄",update:update,set:set}
 								,{x: 1.0*96/68,mtd:48000,x_named:1,ms:"eftms2",label:"全息",update:update,set:set}
 								,{x: 1.0*205/68,mtd:57600,x_named:2,ms:"eftms2",label:"Monstr. 2",update:update,set:set}
 								,{x: 1.0*315/69,mtd:72000,x_named:2,ms:"eftms2",label:"Prism 2.5x",update:update,set:set}
 								,{x: 1.0*397/79,mtd:96000,x_named:3.5,ms:"eftms2",label:"PU 3.5x",update:update,set:set}
-								,{x: 1.0*455/68,mtd:144000,x_named:4,ms:"eftms2",label:"x4(HAMR,DR1/4xFDE,PSO 1 4x24",update:update,set:set}
+								,{x: 1.0*220/37,mtd:144000,x_named:4,ms:"eftms2",label:"BRAVO4/TA11D",update:update,set:set}
+								
+								,{x: 1.0*455/68,mtd:144000,x_named:4,ms:"eftms2",label:"assault x4(HAMR,DR1/4x,PSO 1)",update:update,set:set}
+								,{x: 1.0*237/37,mtd:288016,x_named:4,ms:"eftms2",label:"1p59/1p69",update:update,set:set}
+								,{x: 1.0*267/38,mtd:288016,x_named:4,ms:"eftms2",label:"Pilad 4x32",update:update,set:set}
+								,{x: 1.0*724/37,mtd:288016,x_named:4,ms:"eftms2",label:"1p69(x3-x10)",update:update,set:set}
+								//USP-1  1.0*264/36
+								//TA01NSN, PS320 1/6x   1.0*320/37
+								//TAC30 1.0*306/36
+								//ADO P4 1.0*216/36
 							]
 						data.push({update:infinitY.bind(null,data),label:"∞"})
 						data.forEach(function(e){
@@ -883,5 +901,6 @@
 		<script>
 		remember()		
 		</script>
+
   </body>
 </html>

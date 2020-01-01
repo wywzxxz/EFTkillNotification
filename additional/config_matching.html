@@ -102,8 +102,12 @@
         function renderForm(json) {
 			//尝试重建列表			
 			wRem_data=JSON.parse(JSON.stringify(json))
-			var t=localStorage.getItem("wRem_data")
-			if (t && t.length>0)json=JSON.parse(t)			
+			var t=localStorage.getItem("wRem_data")			
+			if (t && t.length>0){
+				t=JSON.parse(t)				
+				delete t.SelectedDatacenters
+				for (var i in t)	json[i]=t[i]
+			}
 			//
 	        if(window.environment !== 'Production') {
 		        console.log(json);

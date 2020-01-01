@@ -3,7 +3,8 @@ out
 dist
 /additional/questInfo/out.txt
 update.bat
-temp
+temp/*
 out.txt
 /src/items
 additional/items/image
+jTessBoxEditor/*

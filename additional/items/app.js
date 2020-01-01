@@ -86,7 +86,7 @@ try{
 			for (var i in res)
 			{
 				//console.log("\t",i)
-				//json.items[i]=res;
+				json.items[i]=true;
 				var base64Data = res[i].replace(/^data:image\/\w+;base64,/, "");
 				var dataBuffer = new Buffer(base64Data, 'base64');
 				fs.writeFileSync("image/"+escape(i.replace(/[\/\*]/g,"_"))+".png",dataBuffer)				
