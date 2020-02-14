@@ -105,7 +105,7 @@
 			{
 				if (e==null)
 					e=document.querySelectorAll(".remember")			
-				console.log("check",e)
+				//console.log("check",e)
 				e.forEach(function(e){				
 					if (!(e.id in localStorage) || localStorage.getItem(e.id)=="") return
 					if (e.type=="checkbox" )
@@ -294,7 +294,7 @@
 	icons=t
 	function getimg(t)
 	{
-		console.log(t)
+		//console.log(t)
 		//return '<img src="items/'+escape(t.replace(/[\/\*]/g,"_")).replace(/\%/g,"%25")+'.png"></img>'
 		a=icons[capitalize(t)]
 		b="items/"+escape(t.replace(/[\/\*]/g,"_")).replace(/\%/g,"%25")+".png"		

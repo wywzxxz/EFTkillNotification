@@ -121,10 +121,10 @@
 					,update:function(){this.y=1/(arg.a*arg.bf5ms+arg.b);this.y= (this.y/arg.bf5dpi) / travel}
 					,set:function(newy){newy=newy* travel *arg.bf5dpi;arg.bf5ms=(1/newy-arg.b)/arg.a;upload(arg)}
 				}
-				,{x_named:1.00,x: 1,label:"坦克第三人称/机枪塔",mtd:arg.mtd_1
+				/*,{x_named:1.00,x: 1,label:"坦克第三人称/机枪塔",mtd:arg.mtd_1
 					,update:function(){this.y=1/(arg.a*arg.bf5vms+arg.b);this.y= (this.y/arg.bf5dpi) / travel}
 					,set:function(newy){newy=newy* travel *arg.bf5dpi;arg.bf5vms=(1/newy-arg.b)/arg.a;upload(arg)}
-				}
+				}*/
 				,{x_named:1.25,x: 1.0*44/35,label:"1.25倍镜" ,mtd:38228,ms:"bf5ms_1_25",update:update,set:set}							
 				,{x: 1.0*273/183,x_named:1.5,label:"1.5倍镜" ,mtd:45140,ms:"bf5ms_1_50",update:update,set:set}
 				,{x: 1.0*428/215,x_named:2,label:"2倍镜" ,mtd:59164,ms:"bf5ms_2",update:update,set:set}

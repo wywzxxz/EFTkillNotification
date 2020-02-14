@@ -11,6 +11,18 @@ var _hmt = _hmt || [];
   var s = document.getElementsByTagName("script")[0]; 
   s.parentNode.insertBefore(hm, s);
 })();
+/*
+COD16:
+鼠标灵敏度     行程
+1.0	54550	腰射
+2.0	54550/2
+
+1.0	85400	红点
+
+
+54550/(4834*4)
+2.8211625982623086470831609433182
+*/
 </script>
 	<style>
 		.tabset > input[type="radio"] {
@@ -90,20 +102,24 @@ var _hmt = _hmt || [];
 			res=res.replace("%"+i+"%",process.env[i])
 			return res
 		}
-		function remember()
+		function remember(e)
 		{
-			document.querySelectorAll(".remember").forEach(function(e){
+			if (!e) e=document.querySelectorAll(".remember")
+			e.forEach(function(e){
 				if (!e.inited)
 				{
-					e.addEventListener('input', save)
-					load([e])
+					e.addEventListener('input',function(){console.log("##########");save()})
 				}
 				e.inited=true
+				load([e])
 			})			
 		}		
-		function save()
+		function save(e)
 		{
-			document.querySelectorAll(".remember").forEach(function(e){				
+			if (!e) e=document.querySelectorAll(".remember")
+			
+			e.forEach(function(e){			
+				if (!e.inited)return remember([e])			
 				if (e.type=="checkbox")
 					localStorage.setItem(e.id,e.checked)
 				else if (e.type=="radio")
@@ -116,9 +132,10 @@ var _hmt = _hmt || [];
 		}
 		function load(e)
 		{
-			if (e==null)
-				e=document.querySelectorAll(".remember")			
+			
+			if (!e) e=document.querySelectorAll(".remember")
 			e.forEach(function(e){				
+				console.log("load",e.id)
 				if (!(e.id in localStorage) || localStorage.getItem(e.id)=="") return
 				if (e.type=="checkbox" )
 					e.checked=localStorage.getItem(e.id)=="true"	
@@ -183,7 +200,7 @@ var _hmt = _hmt || [];
 					<button id="r6calibration">以此为基准</button>
 					
 				</div>									
-				<div style="   border: 1px solid #000;margin: 10px 0px;">
+				<div id=eft style="   border: 1px solid #000;margin: 10px 0px;">
 					<p>逃离塔科夫</p>
 					<button id="eftcalibration">以此为基准</button><br>
 					<label>游戏配置文件目录</label>
@@ -206,52 +223,24 @@ var _hmt = _hmt || [];
 					</table>
 					
 					<br>	
-					头盔:<select id="efthm" class="remember"></select><br>
-					弹挂:<select id="eftrg" class="remember"></select><br>
+					头盔:<select id="efthm" class="remember"></select><br>					
+					面罩:<select id="eftvs" class="remember"></select><br>
 					防弹衣:<select id="eftve" class="remember"></select><br>					
-					<img id="efthmE"/><img id="eftrgE"/><img id="eftveE"/><br>
+					弹挂:<select id="eftrg" class="remember"></select><br>
+					
+					<img id="efthmE"/><img id="eftvsE"/><br>
+					<img id="eftveE"/><img id="eftrgE"/><br>
 										
 					<button onclick="eftread()">读取设置</button>
-					<button onclick="eftwrite()">写入设置</button>(重启生效)<input id="efttd" type="checkbox" class="remember" >抵消装备带来的转向惩罚</input><label id="efttdl"></label>
+					<button class="write" >写入设置</button>(重启生效)<input id="efttd" type="checkbox" class="remember" >抵消装备带来的转向惩罚</input>
+					<input style='width:20px'id="efttdl"></label>%
+					
 					<script src="eft/gears.js"> </script>
-					<script>										
-						helmat.forEach(t=>{
-							var e=document.createElement("option")
-							e.innerHTML="["+t.class+"]"+t.name
-							document.getElementById("efthm").append(e)
-						})
-						vests.forEach(t=>{
-							var e=document.createElement("option")
-							e.innerHTML="["+t.class+"]"+t.name
-							document.getElementById("eftve").append(e)
-						})
-						rigs.forEach(t=>{
-							var e=document.createElement("option")
-							e.innerHTML="["+t.class+"]"+t.name
-							document.getElementById("eftrg").append(e)
-						})
-						document.getElementById("efthm").onclick=eftgear
-						document.getElementById("eftve").onclick=eftgear					
-						document.getElementById("eftrg").onclick=eftgear
-						function getgearturn()
-						{
-							return	 (helmat[document.getElementById("efthm").selectedIndex].turnspeed ||0)
-									+(vests[document.getElementById("eftve").selectedIndex].turnspeed  ||0)
-									+(rigs[document.getElementById("eftrg").selectedIndex].turnspeed   ||0);
-						}	
-						function eftgear()
-						{
-							document.getElementById("efthmE").src=""
-							document.getElementById("eftveE").src=""
-							document.getElementById("eftrgE").src=""
-							document.getElementById("efthmE").src=helmat[document.getElementById("efthm").selectedIndex].url
-							document.getElementById("eftveE").src=vests[document.getElementById("eftve").selectedIndex].url
-							document.getElementById("eftrgE").src=rigs[document.getElementById("eftrg").selectedIndex].url
-							
-							document.getElementById("efttdl").innerHTML="("+100*getgearturn()+"%)"						
-						}
+					<script>
+						//载入数据
 						remember()
-						eftgear()
+					</script>
+					<script>										
 						function eftread(notload=false)
 						{
 							try{
@@ -276,30 +265,6 @@ var _hmt = _hmt || [];
 							}catch(e){
 								alert("出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases");
 							}
-						}
-						function eftwrite()
-						{
-							try{
-								const fs=require("fs")
-								var json=eftread(true)						
-								json["MouseSensitivity"]=parseFloat(document.querySelector("#eftms1").value)
-								json["MouseAimingSensitivity"]=parseFloat(document.querySelector("#eftms2").value)		
-								
-								json["bak_MouseSensitivity"]=json["MouseSensitivity"]
-								if (document.getElementById("efttd").checked)
-									json["MouseSensitivity"]/=(1+getgearturn())
-								
-								try{								
-									fs.writeFileSync(parsePath(document.querySelector("#eftconfig").value)+"\\shared.ini",JSON.stringify(json,null,2))
-								}catch(e)
-								{
-									alert("塔科夫配置文件读取错误")
-									console.log(e)
-								}
-							}catch(e){
-								alert("出错了！可能你使用的是网页版，只有客户端才支持此功能：https://github.com/wywzxxz/EFTkillNotification/releases");
-							}
-							
 						}
 					</script>
 				</div>
@@ -515,11 +480,12 @@ var _hmt = _hmt || [];
 							,animation: {           // 这部分是数值显示的功能实现                
 								onComplete: function () {									
 									var chartInstance = this.chart,                     
-									ctx = chartInstance.ctx;                    // 以下属于canvas的属性（font、fillStyle、textAlign...）                    
+									ctx = chartInstance.ctx;
 									ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
 									ctx.fillStyle = "black";                    
-									ctx.textAlign = 'center';                    
-									ctx.textBaseline = 'bottom';
+									//ctx.textAlign = 'center';                    
+									//ctx.textBaseline = 'bottom';											
+									var that=this
 									var history=[]									
 									this.data.datasets.forEach(function (dataset, i) {                        
 										var meta = chartInstance.controller.getDatasetMeta(i);
@@ -531,19 +497,63 @@ var _hmt = _hmt || [];
 										meta.data.forEach(function (bar, index) {                            
 											var data = dataset.data[index];  
 											if (!data.label) return
-											ctx.fillStyle=dataset.borderColor
-											var hw=ctx.canvas.height/200
-											var x=bar._model.x
-											var y=bar._model.y-hw
-											
-											var width=ctx.measureText(data.label).width
+											var fontSize=12
+											ctx.fillStyle=dataset.borderColor											
+											ctx.font = fontSize+" px bold 黑体";	
+											//统计标签属性
+											var label={}
+											label.who=i
+											label.fillStyle=ctx.fillStyle											
+											label.x=bar._model.x
+											label.y=bar._model.y
+											var a=ctx.measureText(data.label)											
+											label.width=a.width											
+											label.height=fontSize*2
+											label.x-=label.width/2
+											label.y-=label.height
+											//判断曲线相交												
+											that.data.datasets.forEach(function (dataset, i) {
+												var meta = chartInstance.controller.getDatasetMeta(i);									
+												if (meta.hidden) return 
+												meta.data.forEach(function (bar, index) {
+													var baro=meta.data[index-1]
+													if (index==0) return													
+													var a={x:baro._model.x,y:baro._model.y}
+													var b={x:bar._model.x,y:bar._model.y}													
+													if (a.x>b.x){c=a;a=b;b=c;}
+													if (a.x==b.x)
+													{
+														b.x+=1E-6
+													}
+													if (label.x+label.width<a.x || b.x<label.x) return;													
+													y1=(Math.max(a.x,label.x            )-a.x)/(b.x-a.x)*(b.y-a.y)+a.y
+													y2=(Math.min(b.x,label.x+label.width)-a.x)/(b.x-a.x)*(b.y-a.y)+a.y
+													t={	x:a.x
+													   ,y:Math.min(y1,y2)
+													   ,width:b.x-a.x
+													   ,height:Math.max(y1,y2)-Math.min(y1,y2)
+													   }
+													//console.log(a,b,label.x,y1)
+												if (
+													Math.max(label.x,t.x)<=Math.min(label.x+label.width,t.x+t.width)
+													&&
+													Math.max(label.y,t.y)<=Math.min(label.y+label.height,t.y+t.height)
+												)
+													label.y=Math.min(label.y,t.y-label.height)	
+												})
+											})
+											//判断标签相交											
 											history.forEach(t=>{
-												if (Math.abs(t.x-x)>(t.who==i?10:0)+(t.width+width)/2) return												
-												y=Math.min(y,t.y-25)
-											})											
-											ctx.fillText(data.label,x,y-10); 
-											ctx.fillText("|",x,y); 
-											history.push({x,y,who:i,width:width})
+												if (
+													Math.max(label.x,t.x)<=Math.min(label.x+label.width,t.x+t.width)
+													&&
+													Math.max(label.y,t.y)<=Math.min(label.y+label.height,t.y+t.height)
+												)
+													label.y=Math.min(label.y,t.y-label.height)												
+											})															
+											ctx.fillText(data.label,label.x,label.y); 
+											ctx.fillText("|",label.x+label.width/2,label.y+fontSize); 
+											history.push(label)
 										});                    
 									});
 									charthiddens=charthiddens || {}
@@ -596,8 +606,9 @@ var _hmt = _hmt || [];
 					function reverseset()
 					{
 						this.y=this.set(null)						
-					}
+					}					
 					//逃离塔科夫
+					if (false)
 					(function(){
 						var arg={
 							 eftms1:parseFloat( document.querySelector("#eftms1").value )
@@ -629,10 +640,9 @@ var _hmt = _hmt || [];
 								,{x: 1.0*96/68,mtd:48000,x_named:1,ms:"eftms2",label:"全息",update:update,set:set}
 								,{x: 1.0*205/68,mtd:57600,x_named:2,ms:"eftms2",label:"Monstr. 2",update:update,set:set}
 								,{x: 1.0*315/69,mtd:72000,x_named:2,ms:"eftms2",label:"Prism 2.5x",update:update,set:set}
-								,{x: 1.0*397/79,mtd:96000,x_named:3.5,ms:"eftms2",label:"PU 3.5x",update:update,set:set}
-								,{x: 1.0*220/37,mtd:144000,x_named:4,ms:"eftms2",label:"BRAVO4/TA11D",update:update,set:set}
-								
-								,{x: 1.0*455/68,mtd:144000,x_named:4,ms:"eftms2",label:"assault x4(HAMR,DR1/4x,PSO 1)",update:update,set:set}
+								,{x: 1.0*397/79,mtd:96000,x_named:3.5,ms:"eftms2",label:"PU 3.5x",update:update,set:set}																
+								,{x: 1.0*212/37,mtd:144000,x_named:4,ms:"eftms2",label:"assault x4(HAMR,DR1/4x,PSO 1)",update:update,set:set}
+								,{x: 1.0*234/37,mtd:144000,x_named:4,ms:"eftms2",label:"BRAVO4/TA11D",update:update,set:set}
 								,{x: 1.0*237/37,mtd:288016,x_named:4,ms:"eftms2",label:"1p59/1p69",update:update,set:set}
 								,{x: 1.0*267/38,mtd:288016,x_named:4,ms:"eftms2",label:"Pilad 4x32",update:update,set:set}
 								,{x: 1.0*724/37,mtd:288016,x_named:4,ms:"eftms2",label:"1p69(x3-x10)",update:update,set:set}
@@ -646,7 +656,7 @@ var _hmt = _hmt || [];
 							e.update=e.update || function(){};e.set=e.set || function(){}
 							e.update()
 						})
-						options.data.datasets.push({label: "Escape From Tarkov",data: data,showLine: true,borderColor: "#8e5ea2"})						
+						options.data.datasets.push({label: "Escape From Tarkov",data: data,showLine: true,borderColor: "#8e5ea2"})
 					})();
 					//战地5
 					(function(){					
@@ -790,10 +800,12 @@ var _hmt = _hmt || [];
 								nv=t
 						})								
 						if (nv!=null && Math.abs(nv.y-value)<0.02) value=nv.y
-						//////////////////
-																
-						data[index].set(value)
-						data.forEach(e=>e.update())
+						//////////////////										
+						data[index].set(value)						
+						var arr=data[index].updateFor || [data]
+						arr.forEach(function(data){
+							data.forEach(e=>e.update())
+						})
 						chartInstance.update(0)
 					}
 					
@@ -810,13 +822,16 @@ var _hmt = _hmt || [];
 					}
 				////////////////////////////////////////////////
 				}//},1)
-				r6drawchart.datas=r6drawchart.datas || []
-				setTimeout(r6drawchart,1000)
+				r6drawchart.datas=r6drawchart.datas || []				
 				</script>
+				<script src="mousesensitivity/eft.js"> </script>
 				<script src="apex.js"> </script>
 				<script src="pubg.js"> </script>
-				<script src="mousesensitivity/bf5.js"> </script>
+				<script src="mousesensitivity/bf5.js"> </script>				
 				<script src="mousesensitivity/custom.js"> </script>
+				<script>
+					setTimeout(r6drawchart,1000)
+				</script>
 			</section>
 			<!-- ===击杀提示=========================================================== -->
 			<section id="tabs-2" class="tab-panel">	
@@ -834,7 +849,11 @@ var _hmt = _hmt || [];
 				</div>
 				<script>
 					try{
-						var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");		
+						var tabs2mp3 = new Audio("kill_confirmed_bo2.mp3");	
+						tabs2mp3.volume =0.5
+						try{
+							tabs2mp3.setSinkId("communications");
+						}catch(e){}
 						const fs=require("fs")
 						const chokidar = require('chokidar');
 						var watcher=null

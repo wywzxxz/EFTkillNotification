@@ -31,6 +31,9 @@
 		 ,/(\(SensitiveName="(Scope2X)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/
 		 ,/(\(SensitiveName="(Scope3X)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/
 		 ,/(\(SensitiveName="(Scope4X)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/
+		 ,/(\(SensitiveName="(Scope6X)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/
+		 ,/(\(SensitiveName="(Scope8X)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/
+		 ,/(\(SensitiveName="(Scope15X)"[^()]*LastConvertedSensitivity=)([0-9.]+[^()]*)([^()]*\))/
 	]
 	function read(opt={}){
 		try{
@@ -122,6 +125,8 @@
 				,{label:"2倍镜"   ,named_x: 2,x:1.0*136/57,ms:"scope2x",coefficient:1.999950622,update:update,set:set}
 				,{label:"3倍镜"   ,named_x: 3,x:1.0*210/57,ms:"scope3x",coefficient:3.000086411,update:update,set:set}
 				,{label:"4倍镜"   ,named_x: 4,x:1.0*296/57,ms:"scope4x",coefficient:4.210658207,update:update,set:set}
+				//,{label:"6倍镜(缩小)"   ,named_x: 4,x:1.0*288/79,ms:"scope4x",coefficient:,update:update,set:set}
+				//,{label:"6倍镜"   ,named_x: 4,x:1.0*582/79,ms:"scope4x",coefficient:,update:update,set:set}
 			]
 		//data.push({update:infinitY.bind(null,data),label:"∞"})
 		data.forEach(function(e){
