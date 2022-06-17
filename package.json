@@ -16,7 +16,7 @@
     "nerdamer": "^1.0.4"
   },
   "devDependencies": {
-    "electron": "^7.0.1"
+    "electron": "^15.5.5"
   },
   "version": "0.0.1",
   "build": {
